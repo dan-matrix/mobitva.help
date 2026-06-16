@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Калькулятор сущностей - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .entities-calculator { max-width: 1200px; margin: 0 auto; }
+        .entity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 30px; }
+        .entity-card { background: linear-gradient(145deg, #1e1a14, #14110d); border: 1px solid rgba(199, 186, 0, 0.25); border-radius: 20px; overflow: hidden; transition: all 0.3s ease; }
+        .entity-card:hover { transform: translateY(-5px); border-color: #c7ba00; box-shadow: 0 10px 25px rgba(199, 186, 0, 0.2); }
+        .entity-header { background: linear-gradient(135deg, #2a2420, #1a1612); padding: 15px 20px; border-bottom: 2px solid rgba(199, 186, 0, 0.3); display: flex; align-items: center; gap: 12px; }
+        .entity-icon { font-size: 48px; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)); }
+        .entity-name { font-size: 24px; font-weight: bold; background: linear-gradient(135deg, #ffdd88, #d4b35a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .entity-stats { padding: 15px; }
+        .entity-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed rgba(199, 186, 0, 0.15); }
+        .entity-stat-row:last-child { border-bottom: none; }
+        .entity-stat-name { color: #e8dcc0; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .entity-stat-value { font-weight: bold; font-family: monospace; font-size: 14px; padding: 2px 8px; border-radius: 20px; }
+        .entity-stat-positive { color: #88ffaa; background: rgba(68, 255, 136, 0.15); }
+        .entity-stat-negative { color: #ff8888; background: rgba(255, 68, 68, 0.15); }
+        .entity-stat-neutral { color: #ffdd88; background: rgba(199, 186, 0, 0.15); }
+        .entity-counter { display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); margin: 0 15px 15px 15px; padding: 10px 15px; border-radius: 40px; border: 1px solid rgba(199, 186, 0, 0.2); }
+        .counter-label { font-size: 12px; font-weight: bold; color: #c7ba00; }
+        .counter-controls { display: flex; align-items: center; gap: 12px; }
+        .counter-btn { background: linear-gradient(145deg, #2a2420, #1f1b17); border: 1px solid #c7ba00; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; font-weight: bold; color: #c7ba00; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+        .counter-btn:hover { background: #c7ba00; color: #0d0a07; transform: scale(1.05); }
+        .counter-btn:active { transform: scale(0.95); }
+        .counter-value { font-size: 20px; font-weight: bold; min-width: 50px; text-align: center; font-family: monospace; color: #ffdd88; background: rgba(0, 0, 0, 0.5); padding: 4px 12px; border-radius: 30px; }
+        .result-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-top: 20px; }
+        .result-stat-card { background: linear-gradient(145deg, #1e1a14, #14110d); border: 1px solid rgba(199, 186, 0, 0.2); border-radius: 16px; padding: 12px; text-align: center; transition: 0.2s; }
+        .result-stat-card:hover { border-color: #c7ba00; transform: translateY(-2px); }
+        .result-stat-name { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #c7ba00; margin-bottom: 8px; }
+        .result-stat-value { font-size: 24px; font-weight: bold; font-family: monospace; }
+        .reset-calc-btn { background: linear-gradient(145deg, #2a2420, #1f1b17); border: 1px solid #c7ba00; border-radius: 40px; padding: 10px 24px; color: #c7ba00; font-weight: bold; cursor: pointer; transition: all 0.2s ease; margin-top: 20px; font-size: 13px; }
+        .reset-calc-btn:hover { background: #c7ba00; color: #0d0a07; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(199, 186, 0, 0.3); }
+    </style>
+</head>
+
+<body>
+<div class="wrapper">
+    <div id="adminPanel" style="display:none;">
+        <div class="admin-panel">
+            <div class="admin-info">
+                <div class="admin-avatar">👑</div>
+                <div><div class="admin-name" id="adminName"></div><div class="admin-role">Администратор</div></div>
+                <div class="admin-badge">ADMIN</div>
+            </div>
+            <div class="admin-actions">
+                <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+            </div>
+        </div>
+    </div>
+    <div id="userPanel" style="display:none;">
+        <div class="admin-panel">
+            <div class="admin-info">
+                <div class="admin-avatar">👤</div>
+                <div><div class="admin-name" id="userName"></div><div class="admin-role">Пользователь</div></div>
+            </div>
+            <div class="admin-actions">
+                <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-wrapper">
+        <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+        <div class="site-title">⚔️ КАЛЬКУЛЯТОР СУЩНОСТЕЙ ⚔️</div>
+        <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+    </div>
+
+    <div class="categories">
+        <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+        <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+    </div>
+
+    <div class="entities-calculator">
+        <div class="entity-grid">
+            <!-- ЯРОСТЬ -->
+            <div class="entity-card">
+                <div class="entity-header">
+                    <span class="entity-icon">🔥</span>
+                    <span class="entity-name">ЯРОСТЬ</span>
+                </div>
+                <div class="entity-stats">
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-точность"></i> Точность</span><span class="entity-stat-value entity-stat-negative">-5</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-урон"></i> Урон</span><span class="entity-stat-value entity-stat-positive">+5</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-блок"></i> Блок</span><span class="entity-stat-value entity-stat-positive">+3</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-уворот"></i> Уворот</span><span class="entity-stat-value entity-stat-negative">-2</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-броня"></i> Броня</span><span class="entity-stat-value entity-stat-neutral">0</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-здоровье"></i> ХП</span><span class="entity-stat-value entity-stat-neutral">0</span></div>
+                </div>
+                <div class="entity-counter">
+                    <span class="counter-label">⚡ Количество</span>
+                    <div class="counter-controls">
+                        <button class="counter-btn" data-entity="rage" data-delta="-1">−</button>
+                        <span class="counter-value" id="rage-count">0</span>
+                        <button class="counter-btn" data-entity="rage" data-delta="1">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- СКАЛА -->
+            <div class="entity-card">
+                <div class="entity-header">
+                    <span class="entity-icon">🪨</span>
+                    <span class="entity-name">СКАЛА</span>
+                </div>
+                <div class="entity-stats">
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-точность"></i> Точность</span><span class="entity-stat-value entity-stat-positive">+2</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-урон"></i> Урон</span><span class="entity-stat-value entity-stat-negative">-4</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-блок"></i> Блок</span><span class="entity-stat-value entity-stat-negative">-1</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-уворот"></i> Уворот</span><span class="entity-stat-value entity-stat-negative">-1</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-броня"></i> Броня</span><span class="entity-stat-value entity-stat-positive">+2</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-здоровье"></i> ХП</span><span class="entity-stat-value entity-stat-positive">+35</span></div>
+                </div>
+                <div class="entity-counter">
+                    <span class="counter-label">⛰️ Количество</span>
+                    <div class="counter-controls">
+                        <button class="counter-btn" data-entity="rock" data-delta="-1">−</button>
+                        <span class="counter-value" id="rock-count">0</span>
+                        <button class="counter-btn" data-entity="rock" data-delta="1">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ВЕТЕР -->
+            <div class="entity-card">
+                <div class="entity-header">
+                    <span class="entity-icon">🌬️</span>
+                    <span class="entity-name">ВЕТЕР</span>
+                </div>
+                <div class="entity-stats">
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-точность"></i> Точность</span><span class="entity-stat-value entity-stat-positive">+3</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-урон"></i> Урон</span><span class="entity-stat-value entity-stat-negative">-3</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-блок"></i> Блок</span><span class="entity-stat-value entity-stat-negative">-1</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-уворот"></i> Уворот</span><span class="entity-stat-value entity-stat-positive">+4</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-броня"></i> Броня</span><span class="entity-stat-value entity-stat-negative">-1</span></div>
+                    <div class="entity-stat-row"><span class="entity-stat-name"><i class="stat-icon stat-icon-здоровье"></i> ХП</span><span class="entity-stat-value entity-stat-negative">-5</span></div>
+                </div>
+                <div class="entity-counter">
+                    <span class="counter-label">🍃 Количество</span>
+                    <div class="counter-controls">
+                        <button class="counter-btn" data-entity="wind" data-delta="-1">−</button>
+                        <span class="counter-value" id="wind-count">0</span>
+                        <button class="counter-btn" data-entity="wind" data-delta="1">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="news-section" style="padding: 20px;">
+            <h2>📊 ИТОГОВЫЕ ХАРАКТЕРИСТИКИ</h2>
+            <div class="result-stats-grid" id="finalStatsGrid"></div>
+            <div style="display: flex; justify-content: center;">
+                <button class="reset-calc-btn" id="resetCalculatorBtn">⟳ Сбросить все (0 сущностей)</button>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; font-size: 11px; color: #a0a0a0; margin-top: 25px; padding: 15px 0;">
+        ★ Каждая сущность влияет на параметры. Увеличивайте/уменьшайте количество — итоги пересчитываются в реальном времени.
+    </footer>
+</div>
+
+<script src="/js/db.js"></script>
+<script src="/js/common.js"></script>
+<script>
+    const ENTITY_STATS = {
+        rage: { точность: -5, урон: 5, блок: 3, уворот: -2, броня: 0, хп: 0 },
+        rock: { точность: 2, урон: -4, блок: -1, уворот: -1, броня: 2, хп: 35 },
+        wind: { точность: 3, урон: -3, блок: -1, уворот: 4, броня: -1, хп: -5 }
+    };
+
+    const STAT_KEYS = ['точность', 'урон', 'блок', 'уворот', 'броня', 'хп'];
+    const STAT_NAMES = {
+        точность: '<i class="stat-icon stat-icon-точность"></i> Точность',
+        урон: '<i class="stat-icon stat-icon-урон"></i> Урон',
+        блок: '<i class="stat-icon stat-icon-блок"></i> Блок',
+        уворот: '<i class="stat-icon stat-icon-уворот"></i> Уворот',
+        броня: '<i class="stat-icon stat-icon-броня"></i> Броня',
+        хп: '<i class="stat-icon stat-icon-здоровье"></i> ХП'
+    };
+
+    let counts = { rage: 0, rock: 0, wind: 0 };
+
+    function computeTotalStats() {
+        const total = { точность: 0, урон: 0, блок: 0, уворот: 0, броня: 0, хп: 0 };
+        for (const [entity, mod] of Object.entries(ENTITY_STATS)) {
+            const cnt = counts[entity];
+            if (cnt > 0) {
+                for (const stat of STAT_KEYS) {
+                    total[stat] += mod[stat] * cnt;
+                }
+            }
+        }
+        return total;
+    }
+
+    function getStatClass(value) {
+        if (value > 0) return 'entity-stat-positive';
+        if (value < 0) return 'entity-stat-negative';
+        return 'entity-stat-neutral';
+    }
+
+    function formatValue(value) {
+        if (value === 0) return '0';
+        return value > 0 ? `+${value}` : `${value}`;
+    }
+
+    function refreshUI() {
+        document.getElementById('rage-count').textContent = counts.rage;
+        document.getElementById('rock-count').textContent = counts.rock;
+        document.getElementById('wind-count').textContent = counts.wind;
+
+        const totals = computeTotalStats();
+        const container = document.getElementById('finalStatsGrid');
+        container.innerHTML = '';
+
+        for (const statKey of STAT_KEYS) {
+            const value = totals[statKey];
+            const card = document.createElement('div');
+            card.className = 'result-stat-card';
+            card.innerHTML = `
+                <div class="result-stat-name">${STAT_NAMES[statKey]}</div>
+                <div class="result-stat-value ${getStatClass(value)}">${formatValue(value)}</div>
+            `;
+            container.appendChild(card);
+        }
+    }
+
+    function modifyEntityCount(entity, delta) {
+        let newVal = counts[entity] + delta;
+        if (newVal < 0) newVal = 0;
+        if (newVal > 9999) newVal = 9999;
+        counts[entity] = newVal;
+        refreshUI();
+    }
+
+    function resetAll() {
+        counts = { rage: 0, rock: 0, wind: 0 };
+        refreshUI();
+    }
+
+    document.querySelectorAll('.counter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const entity = btn.getAttribute('data-entity');
+            const delta = parseInt(btn.getAttribute('data-delta'), 10);
+            if (entity && !isNaN(delta)) modifyEntityCount(entity, delta);
+        });
+    });
+
+    document.getElementById('resetCalculatorBtn').addEventListener('click', resetAll);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshUI();
+        displayAdminPanel();
+    });
+</script>
+</body>
+
+</html>

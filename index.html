@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="public, max-age=604800, must-revalidate">
+    <title>Главная - Mobitva(МоБитва)</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" type="image/png" href="/img/books.png">  
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">⚔️ ГЛАВНОЕ МЕНЮ ⚔️</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="button-grid">
+            <button class="main-btn" onclick="location.href='/main'">📦 Предметы<span>Просмотр и
+                    поиск</span></button>
+            <button class="main-btn" onclick="location.href='/quests'">🗺️ Квесты<span>Выполнение
+                    квестов</span></button>
+            <button class="main-btn" onclick="location.href='/demon'">🛡️ Круги демона<span>Пробуди
+                    силу</span></button>
+            <button class="main-btn" onclick="location.href='/totem'">🧪 Тотем клана<span>Улучшение</span></button>
+            <button class="main-btn" onclick="openRunesModal()">✨ Руны<span>Изучай символы</span></button>
+            <button class="main-btn" onclick="openSecretModal()">🔮 Секретные вещи<span>Редкие находки</span></button>
+            <button class="main-btn" onclick="location.href='/enhancements'">✨ Усиления<span>Временные и
+                    постоянные</span></button>
+            <button class="main-btn" onclick="location.href='/map'">🗺️ Карта<span>Локации и охота</span></button>
+            <button class="main-btn" onclick="location.href='/news'">📰 Новости<span>История
+                    новостей</span></button>
+            <button class="main-btn" onclick="location.href='/contacts'">📬 Контакты<span>Связаться</span></button>
+        </div>
+        <div class="news-section">
+            <h2>📢 Последние новости</h2>
+            <div id="latestNewsContainer"></div>
+            <div style="margin-top:15px;"><button class="cat-btn" onclick="location.href='/news'">📰 Все новости
+                    →</button></div>
+        </div>
+    </div>
+
+    <!-- Модалка выбора рун -->
+    <div id="runesModal" class="runes-modal">
+        <div class="runes-modal-content">
+            <div class="runes-modal-title">✨ Руны</div>
+            <div class="runes-modal-subtitle">Выберите локацию</div>
+            <div class="runes-choices">
+                <div class="runes-choice-btn" onclick="location.href='/master'">
+                    <div class="runes-choice-icon">🏰</div>
+                    <div class="runes-choice-name">Мастер</div>
+                </div>
+                <div class="runes-choice-btn" onclick="location.href='/druids'">
+                    <div class="runes-choice-icon">🌿</div>
+                    <div class="runes-choice-name">Фигли</div>
+                </div>
+                <div class="runes-choice-btn" onclick="location.href='/nakolki'">
+                    <div class="runes-choice-icon">🏚️</div>
+                    <div class="runes-choice-name">Квестовые</div>
+                </div>
+            </div>
+            <div>
+                <button class="runes-modal-close" onclick="closeRunesModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка выбора секретных вещей -->
+    <div id="secretModal" class="runes-modal" style="display:none;">
+        <div class="runes-modal-content">
+            <div class="runes-modal-title">🔮 Секретные вещи</div>
+            <div class="runes-modal-subtitle">Выберите категорию</div>
+            <div class="runes-choices">
+                <div class="runes-choice-btn" onclick="location.href='/secret_items'">
+                    <div class="runes-choice-icon">📦</div>
+                    <div class="runes-choice-name">Вещи</div>
+                </div>
+                <div class="runes-choice-btn" onclick="location.href='/secret_sets'">
+                    <div class="runes-choice-icon">👘</div>
+                    <div class="runes-choice-name">Сеты</div>
+                </div>
+            </div>
+            <div>
+                <button class="runes-modal-close" onclick="closeSecretModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        if (!checkAuth()) { window.location.href = '/auth'; }
+
+        async function loadLatestNews() {
+            const news = await getNews();
+            const latest = news.slice(0, 2);
+            const c = document.getElementById('latestNewsContainer');
+            if (!c) return;
+            if (latest.length === 0) { c.innerHTML = '<div>📭 Новостей пока нет</div>'; return; }
+
+            let html = '';
+            latest.forEach(i => {
+                html += `
+                    <div class="latest-news-card">
+                        <div class="latest-news-date">📅 ${new Date(i.date).toLocaleDateString('ru-RU')}</div>
+                        <div class="latest-news-title">${escapeHtml(i.title)}</div>
+                        <div class="latest-news-content">${escapeHtml(i.content.substring(0, 200))}${i.content.length > 200 ? '...' : ''}</div>
+                        ${i.footer ? `<div class="latest-news-footer">${escapeHtml(i.footer)}</div>` : ''}
+                    </div>
+                `;
+            });
+            c.innerHTML = html;
+        }
+
+        function openSecretModal() {
+            document.getElementById('secretModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSecretModal() {
+            document.getElementById('secretModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadLatestNews();
+            displayAdminPanel();
+        });
+    </script>
+</body>
+
+</html>

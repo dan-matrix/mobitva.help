@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База предметов - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">⚔️ БАЗА ПРЕДМЕТОВ ⚔️</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+            <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+        </div>
+
+        <div class="sort-panel">
+            <input type="text" id="searchInput" placeholder="🔍 Поиск предмета..." onkeyup="applyFilters()">
+            <div class="sort-controls">
+                <span class="sort-label">📊 Сортировка:</span>
+                <button class="sort-btn" onclick="sortItems('name')">📝 По имени</button>
+                <button class="sort-btn" onclick="sortItems('level')">⭐ По уровню</button>
+                <div class="dropdown">
+                    <button class="sort-btn dropdown-btn" onclick="toggleDropdown('typeDropdown')">🔧 По типу ▼</button>
+                    <div class="dropdown-content" id="typeDropdown">
+                        <div class="dropdown-header">Выберите тип:</div>
+                        <div class="dropdown-option" onclick="filterByType('all')">📦 Все типы</div>
+                        <div class="dropdown-option" onclick="filterByType('оружие')">⚔️ Оружие</div>
+                        <div class="dropdown-option" onclick="filterByType('щит')">🛡️ Щит</div>
+                        <div class="dropdown-option" onclick="filterByType('броня')">👕 Броня</div>
+                        <div class="dropdown-option" onclick="filterByType('кольцо')">💍 Кольцо</div>
+                        <div class="dropdown-option" onclick="filterByType('зелье')">🧪 Зелье</div>
+                        <div class="dropdown-option" onclick="filterByType('свиток')">📜 Свиток</div>
+                        <div class="dropdown-option" onclick="filterByType('амулет')">📿 Амулет</div>
+                        <div class="dropdown-option" onclick="filterByType('разное')">🎲 Разное</div>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="sort-btn dropdown-btn" onclick="toggleDropdown('styleDropdown')">✨ По стилю
+                        ▼</button>
+                    <div class="dropdown-content" id="styleDropdown">
+                        <div class="dropdown-header">Выберите стиль:</div>
+                        <div class="dropdown-option" onclick="filterByStyle('all')">📊 Все стили</div>
+                        <div class="dropdown-option" onclick="filterByStyle('rare')">🟢 Урон</div>
+                        <div class="dropdown-option" onclick="filterByStyle('uncommon')">🔵 Уворот</div>
+                        <div class="dropdown-option" onclick="filterByStyle('armor')">🔴 Броня</div>
+                        <div class="dropdown-option" onclick="filterByStyle('epic')">🟡 Элита</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="result-count" id="resultCount">📦 Загрузка...</div>
+            <button class="reset-btn" onclick="resetFilters()">🔄 Сбросить все фильтры</button>
+        </div>
+
+        <table class="items-table">
+            <tbody id="itemsList"></tbody>
+        </table>
+
+        <!-- Пагинация -->
+        <div class="pagination-container" id="paginationContainer"
+            style="display:flex; justify-content:center; gap:10px; margin-top:25px; flex-wrap:wrap;"></div>
+    </div>
+
+    <!-- Модалка сравнения предметов -->
+    <div id="compareModal" class="item-compare-modal">
+        <div class="item-compare-container" id="compareContainer"></div>
+    </div>
+
+    <!-- Модалка выбора предмета для сравнения -->
+    <div id="selectItemModal" class="select-item-modal">
+        <div class="select-item-content">
+            <div class="select-item-header">
+                <h3>📦 Выберите предмет для сравнения</h3>
+                <button class="select-item-close" onclick="closeSelectItemModal()">✕</button>
+            </div>
+            <input type="text" id="selectItemSearch" placeholder="🔍 Поиск..." onkeyup="filterSelectItems()">
+            <div class="select-item-list" id="selectItemList"></div>
+        </div>
+    </div>
+
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/statico.js"></script>
+    <script>
+        if (!checkAuth()) { window.location.href = '/auth'; }
+
+        // Обработка параметров URL для глобального поиска
+        const urlParams = new URLSearchParams(window.location.search);
+        const itemId = urlParams.get('item');
+        if (itemId) {
+            setTimeout(() => openItemModal(parseInt(itemId)), 500);
+        }
+
+        let allItems = [];
+        let currentSortField = 'level';
+        let currentSortDir = 'asc';
+        let currentTypeFilter = 'all';
+        let currentStyleFilter = 'all';
+        let currentSearch = '';
+        let currentMainItem = null;
+        let compareItems = [];
+
+        // Пагинация
+        let currentPage = 1;
+        let itemsPerPage = 49;
+        let filteredItems = [];
+
+        async function loadData() {
+            allItems = await getItems();
+            applyFiltersAndRender();
+        }
+
+        function applyFiltersAndRender() {
+            let filtered = [...allItems];
+
+            if (currentSearch !== '') {
+                filtered = filtered.filter(item => item.name.toLowerCase().includes(currentSearch));
+            }
+            if (currentTypeFilter !== 'all') {
+                filtered = filtered.filter(item => item.type.toLowerCase() === currentTypeFilter);
+            }
+            if (currentStyleFilter !== 'all') {
+                filtered = filtered.filter(item => item.style === currentStyleFilter);
+            }
+
+            filtered.sort((a, b) => {
+                let valA, valB;
+                if (currentSortField === 'name') {
+                    valA = a.name.toLowerCase();
+                    valB = b.name.toLowerCase();
+                    return currentSortDir === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else {
+                    valA = a.level || 0;
+                    valB = b.level || 0;
+                    return currentSortDir === 'asc' ? valA - valB : valB - valA;
+                }
+            });
+
+            filteredItems = filtered;
+            currentPage = 1;
+            renderItemsWithPagination();
+        }
+
+        function renderItemsWithPagination() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageItems = filteredItems.slice(start, end);
+
+            const counter = document.getElementById('resultCount');
+            if (counter) {
+                counter.innerHTML = `📦 Найдено: ${filteredItems.length} из ${allItems.length} | Страница ${currentPage} из ${Math.ceil(filteredItems.length / itemsPerPage)}`;
+            }
+
+            const container = document.getElementById('itemsList');
+            if (!container) return;
+
+            if (pageItems.length === 0) {
+                container.innerHTML = `<tr><td colspan="4"><div class="no-items">🔍 Ничего не найдено...</div></td></tr>`;
+                document.getElementById('paginationContainer').innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            for (const item of pageItems) {
+                const styleText = getRussianStyleText(item.style);
+                const styleClass = item.style || '';
+                html += `
+                    <tr onclick="openItemModal(${item.id})">
+                        <td>
+                            <div class="item-cell">
+                                <div class="shop-icon" style="--row:${item.icon_row}; --col:${item.icon_col};"></div>
+                                <span>${escapeHtml(item.name)}</span>
+                            </div>
+                        </td>
+                        <td class="style-cell ${styleClass}">${styleText}</td>
+                        <td class="item-type">${item.type}</td>
+                        <td class="item-level">⭐ ${item.level}</td>
+                    </tr>
+                `;
+            }
+            container.innerHTML = html;
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+            const container = document.getElementById('paginationContainer');
+            if (!container) return;
+
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            // Первая страница
+            if (currentPage > 1) {
+                html += `<button class="pagination-btn" onclick="goToPage(1)">⏮️ 1</button>`;
+                html += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})">◀ Назад</button>`;
+            }
+
+            // Номера страниц
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) html += `<span class="pagination-dots">...</span>`;
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    html += `<button class="pagination-btn active">${i}</button>`;
+                } else {
+                    html += `<button class="pagination-btn" onclick="goToPage(${i})">${i}</button>`;
+                }
+            }
+            if (endPage < totalPages) html += `<span class="pagination-dots">...</span>`;
+
+            // Последняя страница
+            if (currentPage < totalPages) {
+                html += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})">Вперед ▶</button>`;
+                html += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages} ⏩</button>`;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderItemsWithPagination();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderItems() {
+            applyFiltersAndRender();
+        }
+
+        function openItemModal(itemId) {
+            const item = allItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            currentMainItem = item;
+            compareItems = [];
+
+            const container = document.getElementById('compareContainer');
+            container.innerHTML = renderItemCard(item, false);
+            document.getElementById('compareModal').style.display = 'flex';
+        }
+
+        function renderItemCard(item, isCompare = false, compareIndex = null) {
+            const stats = item.stats || {};
+            const uniqueStats = item.unique_stats || [];
+
+            const statsContainer = document.createElement('div');
+            renderStats(stats, statsContainer);
+            const statsHtml = statsContainer.innerHTML;
+
+            let uniqueHtml = '';
+            if (uniqueStats && uniqueStats.length > 0) {
+                uniqueHtml = `
+                    <div class="item-card-unique">
+                        <div class="item-card-unique-title">✨ УНИКАЛЬНЫЕ ХАРАКТЕРИСТИКИ</div>
+                        <ul class="item-card-unique-list">
+                            ${uniqueStats.map(u => `<li>${escapeHtml(u)}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            const styleName = item.style === 'rare' ? 'Урон' : item.style === 'uncommon' ? 'Уворот' : item.style === 'armor' ? 'Броня' : item.style === 'epic' ? 'Элита' : '—';
+            const styleClass = item.style || '';
+
+            return `
+                <div class="item-card-modal ${isCompare ? 'compared' : ''}" data-item-id="${item.id}">
+                    <div class="item-card-header">
+                        ${compareIndex !== null ? `<button class="item-card-remove" onclick="removeCompareItem(${compareIndex})">🗑️</button>` : '<div class="item-card-close" onclick="closeCompareModal()">✕</div>'}
+                        <div class="item-card-icon">
+                            <div class="shop-icon" style="--row:${item.icon_row}; --col:${item.icon_col};"></div>
+                        </div>
+                        <div class="item-card-title">${escapeHtml(item.name)}</div>
+                        <div class="item-card-subtitle"><span class="style-cell ${styleClass}" style="display:inline-block; margin:0 auto; font-size:12px; padding:4px 12px;">${styleName}</span> | ${item.type}</div>
+                        <div class="item-card-level">⭐ Уровень ${item.level}</div>
+                    </div>
+                    <div class="item-card-body">
+                        <div class="item-card-stats">
+                            <div class="item-card-stats-title">📊 ХАРАКТЕРИСТИКИ</div>
+                            ${statsHtml || '<div style="text-align:center;color:#666;">Нет характеристик</div>'}
+                        </div>
+                        ${uniqueHtml}
+                        <div class="item-card-description">
+                            ${item.description ? escapeHtml(item.description) : 'Описание отсутствует'}
+                        </div>
+                    </div>
+                    <div class="item-card-footer">
+                        ${!isCompare ? `<button class="compare-btn" onclick="openSelectItemModal(${item.id})">➕ Сравнить</button>` : ''}
+                        ${isCompare ? '' : '<button class="close-modal-btn" onclick="closeCompareModal()">Закрыть</button>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openSelectItemModal(excludeId) {
+            const modal = document.getElementById('selectItemModal');
+            modal.dataset.excludeId = excludeId;
+            renderSelectItemList('');
+            modal.style.display = 'flex';
+        }
+
+        function renderSelectItemList(searchTerm) {
+            const listContainer = document.getElementById('selectItemList');
+            const excludeId = parseInt(document.getElementById('selectItemModal').dataset.excludeId);
+
+            let filtered = allItems.filter(item => item.id !== excludeId);
+            const compareIds = compareItems.map(i => i.id);
+            filtered = filtered.filter(item => !compareIds.includes(item.id));
+
+            if (searchTerm) {
+                filtered = filtered.filter(item => item.name.toLowerCase().includes(searchTerm));
+            }
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = '<div class="select-item-empty">📭 Нет предметов для выбора</div>';
+                return;
+            }
+
+            let html = '';
+            for (const item of filtered) {
+                html += `
+                    <div class="select-item-option" onclick="addCompareItemFromSelect(${item.id})">
+                        <div class="shop-icon" style="--row:${item.icon_row}; --col:${item.icon_col}; width:80px; height:80px;"></div>
+                        <div class="select-item-info">
+                            <div class="select-item-name">${escapeHtml(item.name)}</div>
+                            <div class="select-item-type">${item.type} | ⭐ ${item.level}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            listContainer.innerHTML = html;
+        }
+
+        function filterSelectItems() {
+            const searchTerm = document.getElementById('selectItemSearch').value.toLowerCase().trim();
+            renderSelectItemList(searchTerm);
+        }
+
+        function addCompareItemFromSelect(itemId) {
+            const item = allItems.find(i => i.id === itemId);
+            if (!item) return;
+
+            compareItems.push(item);
+            closeSelectItemModal();
+
+            const container = document.getElementById('compareContainer');
+            let html = renderItemCard(currentMainItem, false);
+            for (let i = 0; i < compareItems.length; i++) {
+                html += renderItemCard(compareItems[i], true, i);
+            }
+            container.innerHTML = html;
+        }
+
+        function removeCompareItem(index) {
+            compareItems.splice(index, 1);
+            const container = document.getElementById('compareContainer');
+            let html = renderItemCard(currentMainItem, false);
+            for (let i = 0; i < compareItems.length; i++) {
+                html += renderItemCard(compareItems[i], true, i);
+            }
+            container.innerHTML = html;
+        }
+
+        function closeSelectItemModal() {
+            document.getElementById('selectItemModal').style.display = 'none';
+            document.getElementById('selectItemSearch').value = '';
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compareModal').style.display = 'none';
+            currentMainItem = null;
+            compareItems = [];
+        }
+
+        function sortItems(field) {
+            if (currentSortField === field) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortField = field;
+                currentSortDir = 'asc';
+            }
+            applyFiltersAndRender();
+        }
+
+        function filterByType(type) {
+            currentTypeFilter = type;
+            applyFiltersAndRender();
+            closeAllDropdowns();
+        }
+
+        function filterByStyle(style) {
+            currentStyleFilter = style;
+            applyFiltersAndRender();
+            closeAllDropdowns();
+        }
+
+        function applyFilters() {
+            currentSearch = document.getElementById('searchInput').value.toLowerCase().trim();
+            applyFiltersAndRender();
+        }
+
+        function resetFilters() {
+            currentSearch = '';
+            currentTypeFilter = 'all';
+            currentStyleFilter = 'all';
+            currentSortField = 'level';
+            currentSortDir = 'asc';
+            document.getElementById('searchInput').value = '';
+            applyFiltersAndRender();
+            closeAllDropdowns();
+        }
+
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const isOpen = el.classList.contains('show');
+            closeAllDropdowns();
+            if (!isOpen) el.classList.add('show');
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.dropdown')) closeAllDropdowns();
+        });
+
+        loadData();
+        document.addEventListener('DOMContentLoaded', displayAdminPanel);
+    </script>
+</body>
+
+</html>

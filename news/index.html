@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-wrapper"><a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">📰 НОВОСТИ 📰</div><a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+            <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+        </div>
+
+        <!-- Фильтр по категориям -->
+        <div class="news-categories-filter"
+            style="display:flex; gap:10px; justify-content:center; margin-bottom:20px; flex-wrap:wrap;">
+            <button class="cat-btn news-cat-filter active" data-cat="all">📰 Все новости</button>
+            <button class="cat-btn news-cat-filter" data-cat="update">⚙️ Обновления</button>
+            <button class="cat-btn news-cat-filter" data-cat="event">🎉 События</button>
+            <button class="cat-btn news-cat-filter" data-cat="patch">🔧 Патчи</button>
+        </div>
+
+        <div class="news-container" id="newsContainer"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        if (!checkAuth()) { window.location.href = '/auth'; }
+
+        let currentNewsCategory = 'all';
+        let allNews = [];
+
+        async function renderNews() {
+            allNews = await getNews();
+            filterAndRenderNews();
+        }
+
+        function filterAndRenderNews() {
+            let filtered = [...allNews];
+
+            if (currentNewsCategory !== 'all') {
+                filtered = filtered.filter(news => news.category === currentNewsCategory);
+            }
+
+            const container = document.getElementById('newsContainer');
+            if (!container) return;
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="news-empty">📭 Новостей в этой категории пока нет</div>';
+                return;
+            }
+
+            let html = '';
+            for (const n of filtered) {
+                const categoryIcon = n.category === 'update' ? '⚙️' : n.category === 'event' ? '🎉' : n.category === 'patch' ? '🔧' : '📰';
+                const categoryName = n.category === 'update' ? 'Обновление' : n.category === 'event' ? 'Событие' : n.category === 'patch' ? 'Патч' : 'Новость';
+                const categoryClass = n.category === 'update' ? 'news-cat-update' : n.category === 'event' ? 'news-cat-event' : n.category === 'patch' ? 'news-cat-patch' : 'news-cat-default';
+
+                html += `<div class="news-card" data-category="${n.category || 'default'}">
+                    <div class="news-card-header">
+                        <div class="news-date-large">📅 ${new Date(n.date).toLocaleDateString('ru-RU')}</div>
+                        <div class="news-category-badge ${categoryClass}">${categoryIcon} ${categoryName}</div>
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-title">${escapeHtml(n.title)}</div>
+                        <div class="news-content">${escapeHtml(n.content)}</div>
+                        ${n.footer ? `<div class="news-footer">${escapeHtml(n.footer)}</div>` : ''}
+                    </div>
+                </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // Фильтр по категориям
+        document.querySelectorAll('.news-cat-filter').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.news-cat-filter').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentNewsCategory = this.dataset.cat;
+                filterAndRenderNews();
+            });
+        });
+
+        renderNews();
+        document.addEventListener('DOMContentLoaded', displayAdminPanel);
+    </script>
+</body>
+
+</html>

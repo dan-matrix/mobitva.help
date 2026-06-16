@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <title>Авторизация - Mobitva(МоБитва)</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">⚔️ АВТОРИЗАЦИЯ ⚔️</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="auth-container">
+            <div class="auth-box">
+                <div class="auth-icon">🔐</div>
+                <div class="auth-title">Вход в систему</div>
+                <div class="auth-subtitle">Введите данные для входа</div>
+                <div class="auth-input-group">
+                    <label>👤 Логин</label>
+                    <input type="text" id="login" placeholder="Логин" autocomplete="username">
+                </div>
+                <div class="auth-input-group">
+                    <label>🔒 Пароль</label>
+                    <input type="password" id="password" placeholder="Пароль" autocomplete="current-password">
+                </div>
+                <button class="auth-btn" id="loginBtn">Войти</button>
+                <div class="auth-error" id="errorMsg" style="display:none;"></div>
+                <div class="auth-links">Нет аккаунта? <a href="/register">Зарегистрироваться</a></div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        if (checkAuth()) window.location.href = 'index.html';
+
+        async function doLogin() {
+            const loginVal = document.getElementById('login').value.trim();
+            const passwordVal = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            const btn = document.getElementById('loginBtn');
+            errorMsg.style.display = 'none';
+            if (!loginVal || !passwordVal) {
+                errorMsg.textContent = '❌ Введите логин и пароль!';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            btn.disabled = true;
+            btn.textContent = 'Входим...';
+            try {
+                const user = await loginUser(loginVal, passwordVal);
+                if (user) {
+                    window.location.href = 'index.html';
+                } else {
+                    errorMsg.textContent = '❌ Неверный логин или пароль!';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (e) {
+                console.error(e);
+                errorMsg.textContent = '❌ Ошибка сервера. Попробуйте позже.';
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Войти';
+            }
+        }
+
+        document.getElementById('loginBtn').onclick = doLogin;
+        document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+        document.getElementById('login').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    </script>
+</body>
+</html>

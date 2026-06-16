@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контакты - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-wrapper"><a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">📞 КОНТАКТЫ 📞</div><a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="categories"><button class="cat-btn" onclick="location.href='/'">🏠 Главная</button></div>
+        <div class="contacts-container">
+            <div class="contacts-card">
+                <div class="contacts-header">
+                    <h1>Связь с нами</h1>
+                    <p>Мы всегда рады помочь</p>
+                </div>
+                <div class="contacts-body">
+                    <div class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <div class="contact-info">
+                            <div class="contact-label">Email</div>
+                            <div class="contact-value">
+                                <a href="#" id="copyEmailBtn">mmobitva.info@gmail.com</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-info">
+                            <div class="contact-label">Telegram</div>
+                            <div class="contact-value"><a href="https://t.me/mmobitvaru">MMOBitva</a></div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">🌐</div>
+                        <div class="contact-info">
+                            <div class="contact-label">Сайт</div>
+                            <div class="contact-value"><a href="https://mmobitva.ru" target="_blank">MMOBITVA.RU</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">🌐</div>
+                        <div class="contact-info">
+                            <div class="contact-label">Сайт</div>
+                            <div class="contact-value"><a href="https://mobitva.net" target="_blank">MMOBITVA.NET</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомление -->
+    <div id="copyNotification" style="position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#2a2420; border:2px solid #c7ba00; border-radius:12px; padding:10px 20px; color:#c7ba00; font-size:14px; z-index:9999; display:none; white-space:nowrap;">
+        📋 Почта скопирована!
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        if (!checkAuth()) { 
+            window.location.href = '/auth';
+        } 
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            displayAdminPanel();
+            
+            const copyBtn = document.getElementById('copyEmailBtn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const email = 'mmobitva.info@gmail.com';
+                    navigator.clipboard.writeText(email).then(() => {
+                        const notification = document.getElementById('copyNotification');
+                        notification.style.display = 'block';
+                        setTimeout(() => {
+                            notification.style.display = 'none';
+                        }, 2000);
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

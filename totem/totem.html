@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тотем клана - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrapper">
+    <div id="adminPanel" style="display:none;">
+        <div class="admin-panel">
+            <div class="admin-info">
+                <div class="admin-avatar">👑</div>
+                <div>
+                    <div class="admin-name" id="adminName"></div>
+                    <div class="admin-role">Администратор</div>
+                </div>
+                <div class="admin-badge">ADMIN</div>
+            </div>
+            <div class="admin-actions">
+                <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="userPanel" style="display:none;">
+        <div class="admin-panel">
+            <div class="admin-info">
+                <div class="admin-avatar">👤</div>
+                <div>
+                    <div class="admin-name" id="userName"></div>
+                    <div class="admin-role">Пользователь</div>
+                </div>
+            </div>
+            <div class="admin-actions">
+
+                <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-wrapper">
+        <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+        <div class="site-title">🧪 ТОТЕМ КЛАНА 🧪</div>
+        <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+    </div>
+    <div class="categories">
+        <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+        <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+    </div>
+
+    <div class="totems-grid" id="totems-container"></div>
+</div>
+
+<div id="totemModal" class="totem-modal" style="display:none!important">
+    <div class="totem-modal-content">
+        <div class="totem-modal-header">
+            <div class="totem-modal-close" onclick="closeTotemModal()">✕</div>
+            <div class="totem-modal-icon">
+                <div class="item-icon shop-icon" id="modalIcon"
+                     style="width:80px;height:80px;background-image:url('img/shop.png');background-repeat:no-repeat;"></div>
+            </div>
+            <div class="totem-modal-title" id="modalTitle"></div>
+            <div class="totem-modal-subtitle" id="modalSubtitle"></div>
+        </div>
+        <div class="totem-modal-body">
+            <div class="totem-modal-stats">
+                <div class="totem-modal-stats-title">📊 ХАРАКТЕРИСТИКИ</div>
+                <div id="modalStats"></div>
+            </div>
+            <div class="totem-modal-description" id="modalDescription"></div>
+        </div>
+        <div class="totem-modal-footer"><button class="totem-modal-btn" onclick="closeTotemModal()">Закрыть</button></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/db.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/statico.js"></script>
+<script>
+const currentUser = checkAuth(); 
+if(!currentUser) window.location.href = '/auth';
+
+let totems = {};
+
+async function loadTotems() {
+    const data = await getTotems();
+    totems = {};
+    data.forEach(t => { totems[t.id] = t; });
+}
+
+async function renderTotems() {
+    await loadTotems();
+    const container = document.getElementById('totems-container');
+    if(!container) return;
+
+    container.innerHTML = '';
+
+    Object.values(totems).forEach(t => {
+        const card = document.createElement('div');
+        card.className = 'totem-card';
+        card.onclick = () => openTotemModal(t.id);
+
+        const header = document.createElement('div');
+        header.className = 'totem-header';
+
+        const icon = document.createElement('div');
+        icon.className = 'totem-icon shop-icon';
+        icon.style.setProperty('--row', t.icon_row);
+        icon.style.setProperty('--col', t.icon_col);
+
+        const title = document.createElement('div');
+        title.className = 'totem-title';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'totem-name';
+        nameEl.textContent = t.name;
+
+        const levelEl = document.createElement('div');
+        levelEl.className = 'totem-required';
+        levelEl.textContent = `⭐ Требуется ${t.required_level}+ уровень`;
+
+        title.append(nameEl, levelEl);
+        header.append(icon, title);
+        card.appendChild(header);
+
+        const statsContainer = document.createElement('div');
+        statsContainer.className = 'totem-stats';
+        renderStats(t.stats, statsContainer);
+        card.appendChild(statsContainer);
+
+        const desc = document.createElement('div');
+        desc.className = 'totem-description';
+        desc.textContent = t.description;
+        card.appendChild(desc);
+
+        container.appendChild(card);
+    });
+}
+
+function openTotemModal(id) {
+    const t = totems[id];
+    if(!t) return;
+
+    const iconEl = document.getElementById('modalIcon');
+    iconEl.style.backgroundPosition = `-${t.icon_col * 80}px -${t.icon_row * 80}px`;
+
+    document.getElementById('modalTitle').innerText = t.name;
+    document.getElementById('modalSubtitle').innerText = `⭐ Уровень ${t.level} | ⭐ Требуется ${t.required_level}+`;
+    document.getElementById('modalDescription').innerText = t.description;
+
+    const statsContainer = document.getElementById('modalStats');
+    renderStats(t.stats, statsContainer);
+
+    document.getElementById('totemModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTotemModal() {
+    document.getElementById('totemModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+renderTotems();
+document.addEventListener('DOMContentLoaded', displayAdminPanel);
+</script>
+</body>
+</html>

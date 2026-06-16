@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Секретные вещи - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">🔮 СЕКРЕТНЫЕ ВЕЩИ 🔮</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+            <button class="cat-btn" onclick="location.href='/secret_sets'">👘 Секретные сеты</button>
+            <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+        </div>
+
+        <div class="type-filter">
+            <button class="type-btn active" data-type="all">📦 Все</button>
+            <button class="type-btn" data-type="temporary">⏳ Временные</button>
+            <button class="type-btn" data-type="permanent">♾️ Постоянные</button>
+        </div>
+
+        <div class="search-bar-enh">
+            <input type="text" id="searchSecretItem" placeholder="🔍 Поиск секретной вещи...">
+        </div>
+        <div class="result-count-enh" id="resultCountSecret">📦 Загрузка...</div>
+
+        <div class="enhancements-container">
+            <div class="enhancement-list" id="secretItemList"></div>
+        </div>
+    </div>
+
+    <div id="secretItemModal" class="rune-modal" style="display:none!important">
+        <div class="rune-modal-content">
+            <div class="rune-modal-header">
+                <div class="rune-modal-close" onclick="closeSecretItemModal()">✕</div>
+                <div class="rune-modal-icon">
+                    <div class="item-icon shop-icon" id="modalIcon"
+                        style="width:80px;height:80px;background-image:url('img/shop.png');background-repeat:no-repeat;">
+                    </div>
+                </div>
+                <div class="rune-modal-title" id="modalTitle"></div>
+                <div class="rune-modal-subtitle" id="modalSubtitle"></div>
+            </div>
+            <div class="rune-modal-body">
+                <div class="rune-modal-stats">
+                    <div class="rune-modal-stats-title">📊 ХАРАКТЕРИСТИКИ</div>
+                    <div id="modalStats"></div>
+                </div>
+                <div id="modalUniqueContainer" class="item-card-unique" style="display:none; margin-bottom:15px;">
+                    <div class="item-card-unique-title">✨ УНИКАЛЬНЫЕ ХАРАКТЕРИСТИКИ</div>
+                    <ul id="modalUniqueList" class="item-card-unique-list"></ul>
+                </div>
+                <div class="rune-modal-description" id="modalDescription"></div>
+            </div>
+            <div class="rune-modal-footer">
+                <button class="rune-modal-btn" onclick="closeSecretItemModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/statico.js"></script>
+    <script>
+        const currentUser = checkAuth();
+            if (!currentUser) window.location.href = '/auth';
+
+            let allSecretItems = [];
+            let currentTypeFilter = 'all';
+            let currentSearch = '';
+
+            async function loadSecretItems() {
+                allSecretItems = await getSecretItems();
+                filterAndRender();
+            }
+
+            function filterAndRender() {
+                let filtered = [...allSecretItems];
+
+                if (currentTypeFilter !== 'all') {
+                    filtered = filtered.filter(e => e.type === currentTypeFilter);
+                }
+
+                if (currentSearch !== '') {
+                    filtered = filtered.filter(e => e.name.toLowerCase().includes(currentSearch));
+                }
+
+                renderList(filtered);
+                const resultSpan = document.getElementById('resultCountSecret');
+                if (resultSpan) resultSpan.innerHTML = `📦 Найдено: ${filtered.length} из ${allSecretItems.length}`;
+            }
+
+            function renderList(items) {
+                const container = document.getElementById('secretItemList');
+                if (!container) return;
+
+                if (items.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:40px;color:#a0a0a0;">📭 Секретных вещей не найдено</div>';
+                    return;
+                }
+
+                let html = '';
+                for (const item of items) {
+                    const typeText = item.type === 'temporary' ? '⏳ Временное' : '♾️ Постоянное';
+                    const typeClass = item.type === 'temporary' ? 'temporary' : 'permanent';
+
+                    const expiryHtml = item.expiry_text
+                        ? `<div class="enhancement-expiry">📅 Годность: ${escapeHtml(item.expiry_text)}</div>`
+                        : '';
+
+                    html += `
+                    <div class="enhancement-card" onclick="openSecretItemModal(${item.id})">
+                        <div class="enhancement-icon" style="--row:${item.icon_row}; --col:${item.icon_col};"></div>
+                        <div class="enhancement-info">
+                            <div class="enhancement-name">${escapeHtml(item.name)}</div>
+                            <div class="enhancement-level">⭐ Уровень ${item.level}</div>
+                            ${expiryHtml}
+                        </div>
+                        <div class="enhancement-badge ${typeClass}">${typeText}</div>
+                    </div>
+                `;
+                }
+                container.innerHTML = html;
+            }
+
+            function openSecretItemModal(id) {
+                const item = allSecretItems.find(e => e.id === id);
+                if (!item) return;
+
+                const iconEl = document.getElementById('modalIcon');
+                if (iconEl) iconEl.style.backgroundPosition = `-${item.icon_col * 80}px -${item.icon_row * 80}px`;
+
+                const titleEl = document.getElementById('modalTitle');
+                if (titleEl) titleEl.innerText = item.name;
+                
+                const typeText = item.type === 'temporary' ? '⏳ Временное' : '♾️ Постоянное';
+                let expiryLine = '';
+                if (item.expiry_text) {
+                    expiryLine = `<div style="font-size:12px; color:#ffaa44; margin-top:5px;">📅 Годность: ${escapeHtml(item.expiry_text)}</div>`;
+                }
+                const subtitleEl = document.getElementById('modalSubtitle');
+                if (subtitleEl) subtitleEl.innerHTML = `⭐ Уровень ${item.level} | ${typeText}${expiryLine}`;
+                
+                let descriptionHtml = '';
+                if (item.description) {
+                    descriptionHtml += `<div style="margin-bottom:12px;">${escapeHtml(item.description)}</div>`;
+                }
+                if (item.how_to_get) {
+                    descriptionHtml += `<div style="background:rgba(199,186,0,0.15); border-left:3px solid #c7ba00; padding:10px 12px; border-radius:8px; margin-top:8px;">
+                        <div style="font-size:11px; color:#c7ba00; margin-bottom:5px;">🎯 СПОСОБ ПОЛУЧЕНИЯ:</div>
+                        <div style="font-size:12px; color:#ffdd88;">${escapeHtml(item.how_to_get)}</div>
+                    </div>`;
+                }
+                const descEl = document.getElementById('modalDescription');
+                if (descEl) descEl.innerHTML = descriptionHtml || 'Описание отсутствует';
+
+                const statsContainer = document.getElementById('modalStats');
+                if (statsContainer) renderStats(item.stats || {}, statsContainer);
+
+                const uniqueContainer = document.getElementById('modalUniqueContainer');
+                const uniqueList = document.getElementById('modalUniqueList');
+                if (item.unique_stats && item.unique_stats.length > 0) {
+                    if (uniqueContainer) uniqueContainer.style.display = 'block';
+                    if (uniqueList) uniqueList.innerHTML = item.unique_stats.map(u => `<li>✨ ${escapeHtml(u)}</li>`).join('');
+                } else {
+                    if (uniqueContainer) uniqueContainer.style.display = 'none';
+                }
+
+                const modal = document.getElementById('secretItemModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            function closeSecretItemModal() {
+                const modal = document.getElementById('secretItemModal');
+                if (modal) modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            const typeBtns = document.querySelectorAll('.type-btn');
+            if (typeBtns.length > 0) {
+                typeBtns.forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        typeBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        currentTypeFilter = this.dataset.type;
+                        filterAndRender();
+                    });
+                });
+            }
+
+            const searchInput = document.getElementById('searchSecretItem');
+            if (searchInput) {
+                searchInput.addEventListener('input', function (e) {
+                    currentSearch = e.target.value.toLowerCase().trim();
+                    filterAndRender();
+                });
+            }
+
+            loadSecretItems();
+            document.addEventListener('DOMContentLoaded', displayAdminPanel);
+    </script>
+</body>
+
+</html>

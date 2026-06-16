@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .wrapper{max-width:1400px;margin:0 auto;padding:20px;background:linear-gradient(145deg,#1a1612,#12100e);border-radius:20px;border:1px solid rgba(199,186,0,0.3);box-shadow:0 0 30px rgba(199,186,0,0.1);}
+        .top-bar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:15px;flex-wrap:wrap;}
+        .top-bar .admin-panel{flex:1;margin-bottom:0;padding:6px 15px;}
+        .top-bar .header-wrapper{flex:2;margin-bottom:0;padding:6px 15px;}
+        .top-bar .admin-panel .admin-info{gap:10px;}
+        .top-bar .admin-panel .admin-avatar{font-size:20px;}
+        .top-bar .admin-panel .admin-name{font-size:12px;}
+        .top-bar .admin-panel .admin-badge{padding:2px 8px;font-size:9px;}
+        .top-bar .admin-panel .admin-btn{padding:4px 10px;font-size:11px;}
+        .top-bar .header-wrapper .site-title{font-size:20px;}
+        .top-bar .header-wrapper a{padding:4px 10px;font-size:11px;}
+
+        .map-editor-container{background:linear-gradient(145deg,#1a1612,#12100e);border-radius:24px;border:1px solid rgba(199,186,0,0.3);padding:15px;position:relative;}
+        .map-canvas-wrapper{overflow:auto;border-radius:16px;height:72vh;min-height:550px;position:relative;cursor:grab;user-select:none;border:2px solid rgba(199,186,0,0.3);}
+        .map-canvas-wrapper.dragging{cursor:grabbing;}
+
+        /* ===== КАНВАС И ФОНЫ ===== */
+        #mapCanvas{position:relative;transition:background 0.3s;}
+
+        #mapCanvas.bg-grid{
+            background-color:#0d0a07;
+            background-image:radial-gradient(rgba(199,186,0,0.12) 1px,transparent 1px);
+            background-size:40px 40px;
+        }
+        #mapCanvas.bg-parchment{
+            background-color:#c9a55c;
+            background-image:
+                radial-gradient(ellipse at 10% 10%, rgba(215,180,95,0.7) 0%, transparent 38%),
+                radial-gradient(ellipse at 90% 85%, rgba(155,105,30,0.6) 0%, transparent 38%),
+                radial-gradient(ellipse at 55% 55%, rgba(195,150,65,0.3) 0%, transparent 50%),
+                repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(100,60,0,0.05) 49px,rgba(100,60,0,0.05) 50px),
+                repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(100,60,0,0.05) 49px,rgba(100,60,0,0.05) 50px);
+        }
+        #mapCanvas.bg-parchment::after{
+            content:'';position:absolute;inset:0;
+            background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+            pointer-events:none;z-index:1;
+        }
+        #mapCanvas.bg-image{
+            background-color:#0d0a07;
+            background-image:url('img/mapfon.png');
+            background-repeat:no-repeat;
+            background-size:cover;
+            background-position:center top;
+        }
+
+        /* ===== ИКОНКИ ЛОКАЦИЙ ===== */
+        .location-node{
+            position:absolute;
+            cursor:pointer;
+            display:flex;flex-direction:column;align-items:center;gap:4px;
+            z-index:10;
+            transform:translate(-50%,-50%);
+            transition:transform 0.15s;
+        }
+        .location-node:hover{transform:translate(-50%,-50%) scale(1.18);}
+        .location-node.editable{cursor:move;}
+        .location-node.dragging{opacity:0.85;z-index:1000;transition:none;}
+        .location-node.dragging:hover{transform:translate(-50%,-50%);}
+
+        .loc-label{
+            font-size:11px;font-weight:bold;
+            white-space:nowrap;pointer-events:none;
+            max-width:130px;text-align:center;
+            overflow:hidden;text-overflow:ellipsis;
+        }
+        #mapCanvas.bg-grid .loc-label{
+            color:#ffeeaa;
+            text-shadow:1px 1px 3px rgba(0,0,0,1),-1px -1px 3px rgba(0,0,0,1),0 0 6px rgba(0,0,0,1);
+        }
+        #mapCanvas.bg-parchment .loc-label{
+            color:#2d1200;
+            text-shadow:0 1px 0 rgba(220,180,80,0.6),1px 0 0 rgba(220,180,80,0.6);
+            background:rgba(210,165,70,0.35);
+            padding:0 4px;border-radius:3px;
+        }
+        #mapCanvas.bg-image .loc-label{
+            color:#ffe88a;
+            text-shadow:1px 1px 4px rgba(0,0,0,1),-1px -1px 4px rgba(0,0,0,1),0 0 8px rgba(0,0,0,1);
+        }
+
+        /* ===== SVG ТРОПЫ ===== */
+        svg.map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+
+        #mapCanvas.bg-parchment svg.map-svg .conn-line{stroke:rgba(100,55,0,0.5)!important;stroke-dasharray:8 5;}
+        #mapCanvas.bg-parchment svg.map-svg .conn-line:not([stroke="#8a7a40"]){stroke:rgba(100,55,0,0.5)!important;}
+
+        /* ===== ПАНЕЛЬ ===== */
+        .editor-panel{margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:#2a2420;border-radius:16px;}
+        .editor-panel button,.editor-panel select{background:#1a1612;border:1px solid #c7ba00;border-radius:8px;padding:5px 11px;color:#e8dcc0;cursor:pointer;transition:0.2s;font-size:12px;}
+        .editor-panel button:hover{background:#c7ba00;color:#0d0a07;}
+        .editor-panel .admin-only{display:none;}
+        .status-bar{font-size:11px;color:#c7ba00;margin-left:auto;}
+
+        /* Переключатель фона */
+        .bg-switcher{display:flex;align-items:center;gap:6px;background:#1a1612;border:1px solid rgba(199,186,0,0.4);border-radius:8px;padding:4px 10px;}
+        .bg-switcher label{font-size:11px;color:#c7ba00;white-space:nowrap;}
+        .bg-switcher select{background:#0d0a07;border:none;color:#e8dcc0;font-size:11px;padding:2px;outline:none;cursor:pointer;}
+
+        /* ===== ЗУМ ===== */
+        .zoom-controls{position:absolute;bottom:15px;right:15px;display:flex;flex-direction:column;gap:6px;z-index:100;}
+        .zoom-btn{width:36px;height:36px;background:linear-gradient(145deg,#2a2420,#1f1b17);border:2px solid #c7ba00;border-radius:10px;color:#c7ba00;font-size:20px;font-weight:bold;cursor:pointer;transition:0.2s;display:flex;align-items:center;justify-content:center;}
+        .zoom-btn:hover{background:#c7ba00;color:#0d0a07;}
+        .zoom-level{background:rgba(0,0,0,0.75);padding:3px 8px;border-radius:16px;font-size:11px;color:#c7ba00;text-align:center;}
+
+        /* ===== МОДАЛКИ ===== */
+        .modal{display:none;position:fixed;z-index:10000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;}
+
+        .choice-modal{background:linear-gradient(145deg,#1e1a14,#0a0806);border:2px solid #c7ba00;border-radius:24px;padding:25px;width:350px;max-width:90%;text-align:center;}
+        .choice-modal h3{color:#d4b35a;margin-bottom:20px;}
+        .choice-buttons{display:flex;gap:15px;justify-content:center;}
+        .choice-btn{background:#2a2420;border:2px solid #c7ba00;border-radius:40px;padding:12px 25px;color:#c7ba00;cursor:pointer;font-weight:bold;transition:0.2s;}
+        .choice-btn:hover{background:#c7ba00;color:#0d0a07;}
+        .location-edit-modal{background:linear-gradient(145deg,#1e1a14,#0a0806);border:2px solid #c7ba00;border-radius:24px;padding:25px;width:500px;max-width:92%;max-height:85vh;overflow-y:auto;}
+        .location-edit-modal h3{color:#d4b35a;margin-bottom:20px;text-align:center;}
+        .form-group{margin-bottom:15px;}
+        .form-group label{display:block;margin-bottom:6px;color:#c7ba00;font-weight:bold;font-size:12px;}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:#0d0a07;border:1px solid #c7ba00;border-radius:8px;color:#e8dcc0;}
+        .connections-list{max-height:200px;overflow-y:auto;background:#0d0a07;border:1px solid #3a342a;border-radius:8px;padding:8px;}
+        .connection-checkbox{display:flex;align-items:center;gap:10px;padding:6px;cursor:pointer;border-bottom:1px solid #3a342a;}
+        .connection-checkbox:hover{background:#2a2420;}
+        .modal-buttons{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;}
+        .modal-buttons button{padding:10px 20px;}
+        .icon-preview{margin-top:6px;font-size:12px;color:#c7ba00;}
+
+        /* ===== МОДАЛКА ТРОПЫ ===== */
+        .trail-edit-modal{background:linear-gradient(145deg,#1e1a14,#0a0806);border:2px solid #c7ba00;border-radius:24px;padding:25px;width:380px;max-width:92%;}
+        .trail-edit-modal h3{color:#d4b35a;margin-bottom:8px;text-align:center;font-size:18px;}
+        .trail-style-option{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;border:2px solid transparent;transition:0.2s;margin-bottom:8px;}
+        .trail-style-option:hover{background:#2a2420;border-color:#c7ba00;}
+        .trail-style-option.selected{background:#2a2420;border-color:#ffaa44;}
+        .trail-style-option input[type="radio"]{accent-color:#c7ba00;width:16px;height:16px;flex-shrink:0;}
+        .trail-dot{width:50px;height:6px;border-radius:3px;flex-shrink:0;}
+        .trail-info-name{font-weight:bold;font-size:13px;}
+        .trail-info-desc{font-size:11px;color:#888;margin-top:2px;}
+
+        /* ===== ПРОСМОТР ЛОКАЦИИ ===== */
+        .location-modal-content{background:linear-gradient(145deg,#1e1a14,#0a0806);border:2px solid #c7ba00;border-radius:24px;width:400px;max-width:92%;animation:modalFadeIn 0.2s ease;}
+        .location-modal-header{background:linear-gradient(135deg,#2a2420,#1a1612);padding:20px;border-radius:22px 22px 0 0;border-bottom:2px solid #c7ba00;text-align:center;position:relative;}
+        .location-modal-close{position:absolute;top:12px;right:18px;font-size:26px;cursor:pointer;color:#c7ba00;transition:0.2s;}
+        .location-modal-close:hover{color:#ff4444;}
+        .location-modal-title{font-size:20px;font-weight:bold;color:#ffdd88;margin-top:8px;}
+        .location-modal-type{font-size:11px;color:#c7ba00;margin-top:5px;}
+        .location-modal-body{padding:20px;}
+        .location-modal-description{background:rgba(0,0,0,0.3);border-radius:14px;padding:12px;margin-bottom:15px;font-size:13px;color:#c0c0c0;}
+        .location-mobs-section{margin-top:15px;}
+        .location-mobs-title{font-size:12px;color:#c7ba00;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(199,186,0,0.2);}
+        .location-mobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;}
+        .location-mob-card{background:rgba(0,0,0,0.3);border-radius:12px;padding:8px;text-align:center;cursor:pointer;transition:0.2s;border:1px solid rgba(199,186,0,0.1);}
+        .location-mob-card:hover{background:#2a2420;border-color:#c7ba00;transform:translateY(-2px);}
+        .location-mob-name{font-size:11px;font-weight:bold;color:#ffdd88;margin-top:4px;}
+        .location-mob-level{font-size:9px;color:#c7ba00;}
+        .location-mobs-empty{text-align:center;padding:20px;color:#a0a0a0;font-size:12px;}
+        .location-modal-footer{padding:15px 20px 20px;text-align:center;}
+        .location-modal-btn{background:linear-gradient(145deg,#2a2420,#1f1b17);border:1px solid #c7ba00;border-radius:40px;padding:8px 25px;color:#c7ba00;cursor:pointer;transition:0.2s;font-weight:bold;}
+        .location-modal-btn:hover{background:#c7ba00;color:#0d0a07;}
+        .edit-location-btn{background:#44aaff!important;border-color:#44aaff!important;color:#fff!important;}
+        .edit-location-btn:hover{background:#88ccff!important;}
+
+        .icon-from-icons{width:28px;height:28px;background-image:url('img/icons.png');background-repeat:no-repeat;background-position:calc(var(--col,0)*-28px) calc(var(--row,0)*-28px);display:inline-block;vertical-align:middle;}
+
+        /* ===== ИКОНКИ ЛОКАЦИЙ ===== */
+        .loc-icon-map{
+            width:50px;height:50px;
+            background-image:url('img/iconmap.png');
+            background-repeat:no-repeat;
+            background-position:calc(var(--mc,11) * -50px) calc(var(--mr,8) * -50px);
+            background-size:600px 1200px;
+            flex-shrink:0;
+            filter:drop-shadow(0 2px 4px rgba(0,0,0,0.7));
+            transition:transform 0.15s;
+            transform:scale(0.72);
+            transform-origin:center center;
+        }
+        .location-node:hover .loc-icon-map{transform:scale(0.88);}
+
+        .loc-icon-modal{
+            width:50px;height:50px;
+            background-size:600px 1200px;
+            background-position:calc(var(--mc,11) * -50px) calc(var(--mr,8) * -50px);
+            margin:0 auto 8px;
+            transform:scale(1.5);
+            transform-origin:center center;
+            filter:drop-shadow(0 0 8px rgba(199,186,0,0.5));
+            margin-bottom:32px !important;
+            margin-top:8px !important;
+        }
+
+        .map-icon-picker-preview{
+            width:50px;height:50px;
+            background-image:url('img/iconmap.png');
+            background-repeat:no-repeat;
+            background-position:calc(var(--mc,11) * -50px) calc(var(--mr,8) * -50px);
+            background-size:600px 1200px;
+            display:inline-block;
+            flex-shrink:0;
+        }
+
+        /* ===== ПОДСКАЗКА В РЕЖИМЕ РЕДАКТИРОВАНИЯ ===== */
+        .edit-hint{
+            display:none;
+            position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+            background:rgba(0,0,0,0.85);border:1px solid #c7ba00;border-radius:10px;
+            padding:6px 14px;font-size:11px;color:#c7ba00;white-space:nowrap;
+            pointer-events:none;z-index:200;
+        }
+        .edit-mode-active .edit-hint{display:block;}
+
+        @keyframes modalFadeIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+        @media(max-width:768px){.top-bar{flex-direction:column;}.map-canvas-wrapper{height:50vh;}.loc-label{font-size:9px;max-width:80px;}}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="top-bar">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div><div class="admin-name" id="adminName"></div><div class="admin-role">Администратор</div></div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div><div class="admin-name" id="userName"></div><div class="admin-role">Пользователь</div></div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">🗺️ КАРТА MMOБИТВЫ 🗺️</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+    </div>
+
+    <div class="categories">
+        <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+        <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+    </div>
+
+    <div class="map-editor-container" id="mapEditorContainer">
+        <div class="map-canvas-wrapper" id="canvasWrapper">
+            <div id="mapCanvas" class="bg-image"></div>
+            
+        </div>
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomInBtn">+</button>
+            <button class="zoom-btn" id="zoomOutBtn">−</button>
+            <div class="zoom-level" id="zoomLevel">100%</div>
+        </div>
+        <div class="editor-panel" id="editorPanel">
+            <span class="status-bar" id="statusMsg">⚡ Нажми на локацию для просмотра</span>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка локации (просмотр) -->
+<div id="locationModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.82);backdrop-filter:blur(4px);align-items:center;justify-content:center;"></div>
+
+<!-- Модалка добавления локации -->
+<div id="addLocationModal" class="modal" style="display:none;">
+    <div class="location-edit-modal">
+        <h3>🏰 Новая локация</h3>
+        <div class="form-group"><label>📝 Название</label><input type="text" id="newLocName" placeholder="Название локации"></div>
+        <div class="form-group">
+            <label>🎨 Тип локации</label>
+            <select id="newLocColor">
+                <option value="green">🟢 Безопасная</option>
+                <option value="yellow">🟡 Магазин</option>
+                <option value="red">🔴 Опасная</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>🗺️ Иконка локации</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div class="map-icon-picker-preview" id="newLocMapIconPreview" style="--mr:8;--mc:11;"></div>
+                <button type="button" class="cat-btn" id="selectMapIconBtn">🎨 Выбрать иконку</button>
+            </div>
+            <input type="hidden" id="newLocMapIconRow" value="8">
+            <input type="hidden" id="newLocMapIconCol" value="11">
+        </div>
+        <div class="form-group"><label>📝 Описание</label><textarea id="newLocDescription" rows="3" placeholder="Описание локации..."></textarea></div>
+        <div class="form-group">
+            <label>🔗 Тропы к локациям</label>
+            <div id="connectionsList" class="connections-list"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="cat-btn" id="saveNewLocationBtn">💾 Сохранить</button>
+            <button class="cat-btn" onclick="closeAddLocationModal()">❌ Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка редактирования локации -->
+<div id="editLocationModal" class="modal" style="display:none;">
+    <div class="location-edit-modal">
+        <h3>✏️ Редактировать локацию</h3>
+        <input type="hidden" id="editLocId">
+        <div class="form-group"><label>📝 Название</label><input type="text" id="editLocName" placeholder="Название локации"></div>
+        <div class="form-group">
+            <label>🎨 Тип локации</label>
+            <select id="editLocColor">
+                <option value="green">🟢 Безопасная</option>
+                <option value="yellow">🟡 Магазин</option>
+                <option value="red">🔴 Опасная</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>🗺️ Иконка локации</label>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div class="map-icon-picker-preview" id="editLocMapIconPreview" style="--mr:8;--mc:11;"></div>
+                <button type="button" class="cat-btn" id="editSelectMapIconBtn">🎨 Выбрать иконку</button>
+            </div>
+            <input type="hidden" id="editLocMapIconRow" value="8">
+            <input type="hidden" id="editLocMapIconCol" value="11">
+        </div>
+        <div class="form-group"><label>📝 Описание</label><textarea id="editLocDescription" rows="3" placeholder="Описание локации..."></textarea></div>
+        <div class="form-group">
+            <label>🔗 Соседние локации (тропы)</label>
+            <div style="font-size:11px;color:#888;margin-bottom:6px;">Отметь галочкой все локации, с которыми есть прямая тропа</div>
+            <div id="editNeighborsList" class="connections-list"></div>
+        </div>
+        <div class="modal-buttons">
+            <button class="cat-btn" id="saveEditLocationBtn">💾 Сохранить</button>
+            <button class="cat-btn" onclick="closeEditLocationModal()">❌ Отмена</button>
+            <button class="cat-btn" id="deleteLocationBtn" style="background:#ff4444;border-color:#ff4444;">🗑️ Удалить</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== МОДАЛКА РЕДАКТИРОВАНИЯ СТИЛЯ ТРОПЫ ===== -->
+<div id="trailEditModal" class="modal" style="display:none;">
+    <div class="trail-edit-modal">
+        <h3>🛤️ Стиль тропы</h3>
+
+        <!-- Название тропы (откуда → куда) -->
+        <div id="trailEditTitle" style="text-align:center;color:#888;font-size:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #3a342a;"></div>
+
+        <input type="hidden" id="trailEditConnId">
+
+        <!-- Радио-кнопки с визуальным превью каждого стиля -->
+        <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:10px;color:#c7ba00;font-weight:bold;font-size:12px;">🎨 Выберите стиль:</label>
+
+            <label class="trail-style-option" id="trailOpt_dirt">
+                <input type="radio" name="trailStyle" value="dirt">
+                <div class="trail-dot" style="background:linear-gradient(90deg,#3b280a,#8a6e41,#3b280a);box-shadow:0 0 4px #8a6e4166;"></div>
+                <div>
+                    <div class="trail-info-name" style="color:#8a6e41;">🟤 Грунтовая</div>
+                    <div class="trail-info-desc">Обычная земляная дорога</div>
+                </div>
+            </label>
+
+            <label class="trail-style-option" id="trailOpt_stone">
+                <input type="radio" name="trailStyle" value="stone">
+                <div class="trail-dot" style="background:linear-gradient(90deg,#2a2a2a,#b0b0b0,#2a2a2a);box-shadow:0 0 4px #b0b0b066;"></div>
+                <div>
+                    <div class="trail-info-name" style="color:#b0b0b0;">⚫ Каменная</div>
+                    <div class="trail-info-desc">Мощёная камнем тропа</div>
+                </div>
+            </label>
+
+            <label class="trail-style-option" id="trailOpt_grass">
+                <input type="radio" name="trailStyle" value="grass">
+                <div class="trail-dot" style="background:linear-gradient(90deg,#1a4020,#70c044,#1a4020);box-shadow:0 0 4px #70c04466;"></div>
+                <div>
+                    <div class="trail-info-name" style="color:#70c044;">🟢 Травяная</div>
+                    <div class="trail-info-desc">Зелёная травяная тропка</div>
+                </div>
+            </label>
+
+            <label class="trail-style-option" id="trailOpt_danger">
+                <input type="radio" name="trailStyle" value="danger">
+                <div class="trail-dot" style="background:linear-gradient(90deg,#6a1010,#ff9090,#6a1010);box-shadow:0 0 4px #ff909066;"></div>
+                <div>
+                    <div class="trail-info-name" style="color:#ff9090;">🔴 Опасная</div>
+                    <div class="trail-info-desc">Опасный маршрут</div>
+                </div>
+            </label>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="cat-btn" id="saveTrailEditBtn">💾 Сохранить</button>
+            <button class="cat-btn" onclick="closeTrailEditModal()">❌ Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/db.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/icon-picker.js"></script>
+<script src="/js/map.js"></script>
+
+<script>
+// Подсвечиваем выбранный вариант тропы при открытии модалки
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.name === 'trailStyle') {
+        document.querySelectorAll('.trail-style-option').forEach(el => el.classList.remove('selected'));
+        const label = document.getElementById('trailOpt_' + e.target.value);
+        if (label) label.classList.add('selected');
+    }
+});
+
+// Переопределяем openTrailEditModal чтобы сразу ставить radio и подсветку
+const _origOpenTrailEditModal = openTrailEditModal;
+openTrailEditModal = async function(connId) {
+    await _origOpenTrailEditModal(connId);
+    // После открытия — выставляем radio и подсветку
+    const sel = document.getElementById('trailStyleSelect');
+    const val = sel ? sel.value : 'dirt';
+    const radio = document.querySelector(`input[name="trailStyle"][value="${val}"]`);
+    if (radio) {
+        radio.checked = true;
+        document.querySelectorAll('.trail-style-option').forEach(el => el.classList.remove('selected'));
+        const label = document.getElementById('trailOpt_' + val);
+        if (label) label.classList.add('selected');
+    }
+};
+
+// Переопределяем saveTrailEdit чтобы брать значение из radio-группы
+const _origSaveTrailEdit = saveTrailEdit;
+saveTrailEdit = async function() {
+    const radio = document.querySelector('input[name="trailStyle"]:checked');
+    if (radio) {
+        const sel = document.getElementById('trailStyleSelect');
+        if (sel) sel.value = radio.value;
+    }
+    await _origSaveTrailEdit();
+};
+
+// Показываем подсказку в режиме редактирования
+const _origToggleEditMode = toggleEditMode;
+toggleEditMode = function() {
+    _origToggleEditMode();
+    const container = document.getElementById('mapEditorContainer');
+    if (container) container.classList.toggle('edit-mode-active');
+};
+</script>
+</body>
+</html>

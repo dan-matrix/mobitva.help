@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квесты - Mobitva</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">📜 КВЕСТЫ 📜</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+            <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+        </div>
+
+        <div class="quest-filters">
+            <button class="filter-btn active" data-type="all">📦 Все</button>
+            <button class="filter-btn" data-type="story">📖 Сюжетные</button>
+            <button class="filter-btn" data-type="reward">💰 На плату</button>
+            <button class="filter-btn" data-type="item">🎁 На предметы</button>
+            <button class="filter-btn" data-type="daily">🌙 Ежедневные</button>
+            <button class="filter-btn" data-type="blago">✨ Благо</button>
+            <button class="filter-btn" data-type="glory">🏆 Слава</button>
+            <button class="filter-btn" data-type="useless">💀 Бесполезные</button>
+        </div>
+
+        <div class="search-bar-enh" style="margin-bottom:20px;">
+            <input type="text" id="searchQuest" placeholder="🔍 Поиск квеста...">
+        </div>
+
+        <div class="quests-container" id="questsContainer"></div>
+    </div>
+
+    <!-- Модалка квеста -->
+    <div id="questModal" class="modal" style="display:none;">
+        <div class="quest-modal-content">
+            <div class="quest-modal-header">
+                <div class="quest-modal-name" id="questModalName"></div>
+                <div class="quest-modal-level-type">
+                    <span class="quest-modal-level" id="questModalLevel"></span>
+                    <span id="questModalType" class="quest-type-icons-modal"></span>
+                    <span id="questMultiStageBadge" style="display:none; background:#c7ba00; color:#0d0a07; padding:4px 12px; border-radius:30px; font-size:11px; font-weight:bold; margin-left:10px;">📋 Многоэтапный</span>
+                </div>
+                <div class="quest-modal-location" id="questModalLocation"></div>
+                <div><span class="quest-modal-repeat" id="questModalRepeat"></span></div>
+            </div>
+            <div class="quest-modal-section">
+                <div class="quest-modal-section-title" id="questModalDescTitle">📖 Описание</div>
+                <div class="quest-modal-section-content" id="questModalDesc"></div>
+            </div>
+            <div class="quest-modal-section">
+                <div class="quest-modal-section-title" id="questModalReqTitle">📋 Требования</div>
+                <div class="quest-modal-section-content" id="questModalRequirements"></div>
+            </div>
+            <div class="quest-modal-section">
+                <div class="quest-modal-section-title" id="questModalCommentTitle">📝 Дополнительно</div>
+                <div class="quest-modal-section-content" id="questModalComment"></div>
+            </div>
+            <div class="quest-modal-section">
+                <div class="quest-modal-section-title" id="questModalRewTitle">🎁 Награды</div>
+                <div class="quest-modal-section-content" id="questModalRewards"></div>
+            </div>
+            <div class="quest-modal-footer">
+                <button class="quest-modal-btn" onclick="closeQuestModal()">❌ Закрыть</button>
+                <button class="quest-modal-btn" id="openStagesModalBtn" style="display:none;" onclick="openStagesModal()">📋 Этапы</button>
+                <button class="quest-modal-btn add-to-timer-btn" onclick="openAddTimerFromModal()">⏰ Добавить в таймер</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка этапов -->
+    <div id="stagesModal" class="modal" style="display:none;">
+        <div class="quest-modal-content">
+            <div class="quest-modal-header">
+                <div class="quest-modal-name">📋 ЭТАПЫ ЗАДАНИЯ</div>
+                <div class="quest-modal-level-type" id="stagesCounter"></div>
+            </div>
+            <div class="quest-modal-section" style="min-height:180px;">
+                <div id="stagesContent" class="quest-modal-section-content"></div>
+            </div>
+            <div class="quest-modal-footer" style="justify-content:space-between;">
+                <button class="stage-nav-btn" onclick="prevStage()">◀ Предыдущий</button>
+                <button class="quest-modal-btn" onclick="closeStagesModal()">❌ Закрыть</button>
+                <button class="stage-nav-btn" onclick="nextStage()">Следующий ▶</button>
+            </div>
+            <div id="stagesDots" class="stages-dots-container"></div>
+        </div>
+    </div>
+
+    <div id="addTimerModal" class="modal" style="display:none;">
+        <div class="timer-add-modal">
+            <h3>⏰ Добавить в таймер</h3>
+            <select id="timerCharacterSelect">
+                <option value="">-- Выберите персонажа --</option>
+            </select>
+            <input type="text" id="timerQuestName" placeholder="Название квеста">
+            <div class="time-input-group">
+                <div class="time-field"><label>📅 Дни</label><input type="number" id="timerDays" min="0" value="0"></div>
+                <div class="time-field"><label>⏰ Часы</label><input type="number" id="timerHours" min="0" value="0"></div>
+                <div class="time-field"><label>⏱️ Минуты</label><input type="number" id="timerMinutes" min="0" value="0"></div>
+            </div>
+            <textarea id="timerNotes" rows="2" placeholder="📝 Заметки (необязательно)"></textarea>
+            <div class="modal-buttons" style="margin-top:15px;">
+                <button class="cat-btn" onclick="saveTimerFromQuest()">💾 Сохранить</button>
+                <button class="cat-btn" onclick="closeAddTimerModal()">❌ Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/icon-picker.js"></script>
+    <script src="/js/statico.js"></script>
+    <script>
+        const currentUser = checkAuth();
+        if (!currentUser) window.location.href = '/auth';
+
+        let allQuests = [];
+        let currentTypeFilter = 'all';
+        let currentSearch = '';
+        let currentQuestForTimer = null;
+        let currentStages = [];
+        let currentStageIndex = 0;
+
+        async function loadQuests() {
+            allQuests = await getQuests();
+            filterAndRender();
+        }
+
+        function getTypeIcons(quest) {
+            let types = quest.types || [quest.type];
+            if (!Array.isArray(types)) types = [types];
+            const icons = [];
+            for (const t of types) {
+                switch(t) {
+                    case 'story': icons.push('<span class="type-icon" title="Сюжетный">📖</span>'); break;
+                    case 'reward': icons.push('<span class="type-icon" title="На плату">💰</span>'); break;
+                    case 'item': icons.push('<span class="type-icon" title="На предметы">🎁</span>'); break;
+                    case 'daily': icons.push('<span class="type-icon" title="Ежедневный">🌙</span>'); break;
+                    case 'blago': icons.push('<span class="type-icon" title="Благо">✨</span>'); break;
+                    case 'glory': icons.push('<span class="type-icon" title="Слава">🏆</span>'); break;
+                    case 'useless': icons.push('<span class="type-icon" title="Бесполезный">💀</span>'); break;
+                    default: icons.push('<span class="type-icon" title="' + t + '">❓</span>');
+                }
+            }
+            return icons.join('');
+        }
+
+        function getTypeClass(quest) {
+            let types = quest.types || [quest.type];
+            if (!Array.isArray(types)) types = [types];
+            const firstType = types[0];
+            switch(firstType) { 
+                case 'story': return 'type-story'; case 'reward': return 'type-reward'; case 'item': return 'type-item';
+                case 'daily': return 'type-daily'; case 'blago': return 'type-blago'; case 'glory': return 'type-glory';
+                case 'useless': return 'type-useless'; default: return ''; 
+            }
+        }
+
+        function getSectionColorClass(quest) {
+            let types = quest.types || [quest.type];
+            if (!Array.isArray(types)) types = [types];
+            const firstType = types[0];
+            switch(firstType) { 
+                case 'story': return 'quest-modal-section-title-story'; case 'reward': return 'quest-modal-section-title-reward';
+                case 'item': return 'quest-modal-section-title-item'; case 'daily': return 'quest-modal-section-title-daily';
+                case 'blago': return 'quest-modal-section-title-blago'; case 'glory': return 'quest-modal-section-title-glory';
+                case 'useless': return 'quest-modal-section-title-useless'; default: return ''; 
+            }
+        }
+
+        function getRepeatIcon(repeatType, cooldown) {
+            if (repeatType === 'once') return '🔒 Одноразовый';
+            if (repeatType === 'repeat') return `🔄 Повторяющийся | ⏱️ ${cooldown}`;
+            if (repeatType === 'daily') return `🌙 Ежедневный | ⏱️ ${cooldown}`;
+            return '';
+        }
+
+        function filterAndRender() {
+            let filtered = [...allQuests];
+            if (currentTypeFilter !== 'all') {
+                filtered = filtered.filter(q => {
+                    let types = q.types || [q.type];
+                    if (!Array.isArray(types)) types = [types];
+                    return types.includes(currentTypeFilter);
+                });
+            }
+            if (currentSearch !== '') {
+                filtered = filtered.filter(q => q.name.toLowerCase().includes(currentSearch));
+            }
+            renderList(filtered);
+        }
+
+        function renderList(quests) {
+            const container = document.getElementById('questsContainer');
+            if (!container) return;
+            if (quests.length === 0) { 
+                container.innerHTML = '<div style="text-align:center;padding:40px;color:#a0a0a0;">📭 Квестов не найдено</div>'; 
+                return; 
+            }
+            let html = '';
+            for (const q of quests) {
+                html += `<div class="quest-item">
+                            <div class="quest-info" onclick="openQuestModal(${q.id})">
+                                <div class="quest-name">📜 ${escapeHtml(q.name)}</div>
+                                <div class="quest-location">${getIconHtml(3, 10, 28)} ${escapeHtml(q.location_name)}</div>
+                            </div>
+                            <div class="quest-right">
+                                <div class="quest-level">⭐${q.level}</div>
+                                <div class="quest-types-icons">${getTypeIcons(q)}</div>
+                                <button class="quest-timer-btn" onclick="event.stopPropagation(); openAddTimerModal(${q.id})">⏰</button>
+                            </div>
+                        </div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function openStagesModal() {
+            if (!currentStages || currentStages.length === 0) return;
+            currentStageIndex = 0;
+            updateStagesModal();
+            document.getElementById('stagesModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeStagesModal() {
+            document.getElementById('stagesModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function updateStagesModal() {
+            const stage = currentStages[currentStageIndex];
+            if (!stage) return;
+            const content = document.getElementById('stagesContent');
+            const counter = document.getElementById('stagesCounter');
+            if (content) {
+                let html = '';
+                if (stage.description) html += `<div style="margin-bottom:12px;"><strong>📖 Описание:</strong><br>${escapeHtml(stage.description)}</div>`;
+                if (stage.requirements) html += `<div style="margin-bottom:12px;"><strong>📋 Требования:</strong><br>${escapeHtml(stage.requirements)}</div>`;
+                if (stage.comment) html += `<div><strong>📝 Комментарий:</strong><br>${escapeHtml(stage.comment)}</div>`;
+                if (html === '') html = '<div>Нет информации об этапе</div>';
+                content.innerHTML = html;
+            }
+            if (counter) counter.innerHTML = `ЭТАП ${currentStageIndex + 1} из ${currentStages.length}`;
+            
+            const dotsContainer = document.getElementById('stagesDots');
+            if (dotsContainer) {
+                let dotsHtml = '';
+                for (let i = 0; i < currentStages.length; i++) {
+                    dotsHtml += `<div class="stage-dot ${i === currentStageIndex ? 'active' : ''}" onclick="goToStage(${i})"></div>`;
+                }
+                dotsContainer.innerHTML = dotsHtml;
+            }
+        }
+
+        function nextStage() {
+            if (currentStageIndex < currentStages.length - 1) {
+                currentStageIndex++;
+                updateStagesModal();
+            }
+        }
+
+        function prevStage() {
+            if (currentStageIndex > 0) {
+                currentStageIndex--;
+                updateStagesModal();
+            }
+        }
+
+        function goToStage(index) {
+            currentStageIndex = index;
+            updateStagesModal();
+        }
+
+        function openQuestModal(questId) {
+            const quest = allQuests.find(q => q.id === questId);
+            if (!quest) return;
+            currentQuestForTimer = quest;
+            currentStages = quest.stages || [];
+            const colorClass = getSectionColorClass(quest);
+            
+            const stagesBtn = document.getElementById('openStagesModalBtn');
+            if (stagesBtn) stagesBtn.style.display = currentStages.length > 0 ? 'inline-block' : 'none';
+            
+            const badge = document.getElementById('questMultiStageBadge');
+            if (badge) badge.style.display = currentStages.length > 0 ? 'inline-block' : 'none';
+            
+            const nameEl = document.getElementById('questModalName');
+            const levelEl = document.getElementById('questModalLevel');
+            const typeEl = document.getElementById('questModalType');
+            const locationEl = document.getElementById('questModalLocation');
+            const repeatEl = document.getElementById('questModalRepeat');
+            const descEl = document.getElementById('questModalDesc');
+            const reqEl = document.getElementById('questModalRequirements');
+            const commentEl = document.getElementById('questModalComment');
+            const commentTitle = document.getElementById('questModalCommentTitle');
+            const descTitle = document.getElementById('questModalDescTitle');
+            const reqTitle = document.getElementById('questModalReqTitle');
+            const rewTitle = document.getElementById('questModalRewTitle');
+            const rewardsEl = document.getElementById('questModalRewards');
+            
+            if (nameEl) nameEl.innerText = quest.name;
+            if (levelEl) levelEl.innerHTML = '⭐ Уровень ' + quest.level;
+            if (typeEl) {
+                typeEl.innerHTML = getTypeIcons(quest);
+                typeEl.className = 'quest-type-icons-modal';
+            }
+            if (locationEl) locationEl.innerHTML = getIconHtml(3, 10, 28) + ' ' + escapeHtml(quest.location_name);
+            if (repeatEl) repeatEl.innerHTML = getRepeatIcon(quest.repeat_type, quest.cooldown);
+            if (descEl) descEl.innerHTML = escapeHtml(quest.description);
+            if (reqEl) reqEl.innerHTML = escapeHtml(quest.requirements);
+            if (commentEl) commentEl.innerHTML = escapeHtml(quest.comment || '');
+            if (commentTitle) commentTitle.style.display = quest.comment ? 'flex' : 'none';
+            if (descTitle) descTitle.className = 'quest-modal-section-title ' + colorClass;
+            if (reqTitle) reqTitle.className = 'quest-modal-section-title ' + colorClass;
+            if (rewTitle) rewTitle.className = 'quest-modal-section-title ' + colorClass;
+            
+            let rewardsHtml = '';
+            if (quest.rewards.exp > 0) rewardsHtml += '<li><span class="reward-icon reward-icon-exp"></span> Опыт: ' + quest.rewards.exp + '</li>';
+            if (quest.rewards.glory > 0) rewardsHtml += '<li><span class="reward-icon reward-icon-glory"></span> Слава: ' + quest.rewards.glory + '</li>';
+            if (quest.rewards.fee > 0) rewardsHtml += '<li><span class="reward-icon reward-icon-plata"></span> Плата: ' + quest.rewards.fee + '</li>';
+            if (quest.rewards.gold > 0) rewardsHtml += '<li><span class="reward-icon reward-icon-zoloto"></span> Золото: ' + quest.rewards.gold + '</li>';
+            if (quest.rewards.silver > 0) rewardsHtml += '<li><span class="reward-icon reward-icon-serebro"></span> Серебро: ' + quest.rewards.silver + '</li>';
+            if (quest.rewards.copper > 0) rewardsHtml += '<li><span class="reward-icon reward-icon-med"></span> Медяк: ' + quest.rewards.copper + '</li>';
+            
+            if (quest.rewards.items && quest.rewards.items.length > 0) {
+                rewardsHtml += '<li>📦 Предметы:<ul>';
+                for (const item of quest.rewards.items) {
+                    const category = item.category || 'secret';
+                    let itemIcon = '✨';
+                    if (category === 'enhancement') itemIcon = '⚡';
+                    else if (category === 'demon') itemIcon = '👹';
+                    else if (category === 'rune') itemIcon = '🏰';
+                    else if (category === 'item') itemIcon = '📦';
+                    rewardsHtml += '<li><span class="reward-item-link" onclick="event.stopPropagation(); window.openItemModalById(' + item.id + ', \'' + category + '\')">' + itemIcon + ' ' + escapeHtml(item.name) + ' (' + (item.level || 0) + ' ур.)</span></li>';
+                }
+                rewardsHtml += '</ul></li>';
+            }
+            if (rewardsHtml === '') rewardsHtml = 'Нет наград';
+            if (rewardsEl) rewardsEl.innerHTML = '<ul class="quest-modal-rewards-list">' + rewardsHtml + '</ul>';
+            
+            const modal = document.getElementById('questModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeQuestModal() {
+            const modal = document.getElementById('questModal');
+            if (modal) modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        function openAddTimerFromModal() {
+            if (currentQuestForTimer) {
+                closeQuestModal();
+                setTimeout(() => openAddTimerModal(currentQuestForTimer.id), 300);
+            } else { 
+                alert('❌ Ошибка: квест не выбран'); 
+            }
+        }
+
+        async function openAddTimerModal(questId) {
+            const quest = allQuests.find(q => q.id === questId);
+            if (!quest) return;
+            currentQuestForTimer = quest;
+            const characters = await getUserCharacters(currentUser.login);
+            const select = document.getElementById('timerCharacterSelect');
+            if (select) {
+                select.innerHTML = '<option value="">-- Выберите персонажа --</option>';
+                for (const char of characters) {
+                    select.innerHTML += '<option value="' + char.id + '">' + escapeHtml(char.name) + '</option>';
+                }
+            }
+            const questNameInput = document.getElementById('timerQuestName');
+            const daysInput = document.getElementById('timerDays');
+            const hoursInput = document.getElementById('timerHours');
+            const minutesInput = document.getElementById('timerMinutes');
+            const notesInput = document.getElementById('timerNotes');
+            if (questNameInput) questNameInput.value = quest.name;
+            const minutes = quest.cooldown_minutes || 0;
+            if (daysInput) daysInput.value = Math.floor(minutes / 1440);
+            if (hoursInput) hoursInput.value = Math.floor((minutes % 1440) / 60);
+            if (minutesInput) minutesInput.value = minutes % 60;
+            if (notesInput) notesInput.value = '';
+            const modal = document.getElementById('addTimerModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeAddTimerModal() {
+            const modal = document.getElementById('addTimerModal');
+            if (modal) modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        // ==================== ОТКРЫТИЕ ПО ПРЯМОЙ ССЫЛКЕ ====================
+        function openQuestByUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const questId = urlParams.get('id');
+            const openModal = urlParams.get('open');
+            
+            if (questId && openModal === 'modal') {
+                // Ждём загрузки квестов
+                const checkQuests = setInterval(() => {
+                    if (allQuests.length > 0) {
+                        clearInterval(checkQuests);
+                        const quest = allQuests.find(q => q.id == questId);
+                        if (quest) {
+                            setTimeout(() => {
+                                openQuestModal(quest.id);
+                            }, 500);
+                        }
+                    }
+                }, 100);
+            }
+        }
+
+        // Запускаем после загрузки квестов
+        const originalLoadQuests = loadQuests;
+        loadQuests = async function() {
+            await originalLoadQuests();
+            openQuestByUrl();
+        };
+        async function saveTimerFromQuest() {
+            const characterId = document.getElementById('timerCharacterSelect')?.value;
+            const questName = document.getElementById('timerQuestName')?.value.trim();
+            const days = parseInt(document.getElementById('timerDays')?.value) || 0;
+            const hours = parseInt(document.getElementById('timerHours')?.value) || 0;
+            const minutes = parseInt(document.getElementById('timerMinutes')?.value) || 0;
+            const notes = document.getElementById('timerNotes')?.value.trim() || '';
+            if (!characterId) { alert('❌ Выберите персонажа!'); return; }
+            if (!questName) { alert('❌ Введите название квеста!'); return; }
+            const totalMs = (days * 86400000) + (hours * 3600000) + (minutes * 60000);
+            if (totalMs <= 0) { alert('❌ Укажите время больше 0!'); return; }
+            const endTime = Date.now() + totalMs;
+            const { error } = await db.from('user_timers').insert([{ 
+                character_id: parseInt(characterId), quest_name: questName, end_time: endTime, 
+                duration: totalMs, notes: notes, is_active: true 
+            }]);
+            if (error) { alert('❌ Ошибка при добавлении в таймер!'); return; }
+            alert('✅ Квест добавлен в таймер!');
+            closeAddTimerModal();
+        }
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTypeFilter = btn.dataset.type;
+                filterAndRender();
+            });
+        });
+        
+        const searchInput = document.getElementById('searchQuest');
+        if (searchInput) {
+            searchInput.addEventListener('input', function(e) {
+                currentSearch = e.target.value.toLowerCase().trim();
+                filterAndRender();
+            });
+        }
+        
+        loadQuests();
+        document.addEventListener('DOMContentLoaded', displayAdminPanel);
+    </script>
+</body>
+</html>

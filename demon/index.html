@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Круги Демона - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">🛡️ КРУГИ ДЕМОНА 🛡️</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+            <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
+        </div>
+
+        <div class="circles-grid" id="circles-container"></div>
+    </div>
+
+    <div id="demonModal" class="demon-modal" style="display:none!important">
+        <div class="demon-modal-content">
+            <div class="demon-modal-header">
+                <div class="demon-modal-close" onclick="closeDemonModal()">✕</div>
+                <div class="demon-modal-icon">
+                    <div class="item-icon shop-icon" id="modalIcon"
+                        style="width:80px;height:80px;background-image:url('img/shop.png');background-repeat:no-repeat;">
+                    </div>
+                </div>
+                <div class="demon-modal-title" id="modalTitle"></div>
+                <div class="demon-modal-subtitle" id="modalSubtitle"></div>
+            </div>
+            <div class="demon-modal-body">
+                <div class="demon-modal-stats">
+                    <div class="demon-modal-stats-title">📊 ХАРАКТЕРИСТИКИ</div>
+                    <div id="modalStats"></div>
+                </div>
+                <div class="demon-modal-description" id="modalDescription"></div>
+            </div>
+            <div class="demon-modal-footer">
+                <button class="demon-modal-btn" onclick="closeDemonModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/statico.js"></script>
+    <script>
+        const currentUser = checkAuth();
+        if (!currentUser) window.location.href = '/auth';
+
+        let demonCircles = {};
+
+        async function loadCircles() {
+            const data = await getDemons();
+            demonCircles = {};
+            data.forEach(d => { demonCircles[d.id] = d; });
+        }
+
+        async function renderCircles() {
+            await loadCircles();
+            const c = document.getElementById('circles-container');
+            if (!c) return;
+
+            c.innerHTML = '';
+            for (const [id, circle] of Object.entries(demonCircles)) {
+                const card = document.createElement('div');
+                card.classList.add('circle-card');
+                card.onclick = () => openDemonModal(id);
+
+                card.innerHTML = `
+        <div class="circle-header">
+            <div class="circle-icon shop-icon" style="--row:${circle.icon_row}; --col:${circle.icon_col};"></div>
+            <div class="circle-title">
+                <div class="circle-name">${escapeHtml(circle.name)}</div>
+                <div class="circle-level">⭐ Уровень ${circle.level}</div>
+            </div>
+        </div>
+        <div class="circle-stats" id="circle-stats-${id}"></div>
+        <div class="circle-description">${escapeHtml(circle.description)}</div>
+        `;
+
+                c.appendChild(card);
+                renderStats(circle.stats, document.getElementById(`circle-stats-${id}`));
+            }
+        }
+
+        function openDemonModal(id) {
+            const circle = demonCircles[id];
+            if (!circle) return;
+
+            document.getElementById('modalIcon').style.backgroundPosition =
+                `-${circle.icon_col * 80}px -${circle.icon_row * 80}px`;
+
+            document.getElementById('modalTitle').innerText = circle.name;
+            document.getElementById('modalSubtitle').innerHTML = `⭐ Уровень ${circle.level}`;
+            document.getElementById('modalDescription').innerHTML = circle.description;
+
+            renderStats(circle.stats, document.getElementById('modalStats'));
+
+            document.getElementById('demonModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDemonModal() {
+            document.getElementById('demonModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        renderCircles();
+        document.addEventListener('DOMContentLoaded', displayAdminPanel);
+    </script>
+</body>
+
+</html>

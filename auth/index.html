@@ -39,7 +39,7 @@
     <script src="/js/db.js"></script>
     <script src="/js/common.js"></script>
     <script>
-        if (checkAuth()) window.location.href = 'index.html';
+        if (checkAuth()) window.location.href = '/';
 
         async function doLogin() {
             const loginVal = document.getElementById('login').value.trim();
@@ -57,7 +57,7 @@
             try {
                 const user = await loginUser(loginVal, passwordVal);
                 if (user) {
-                    window.location.href = 'index.html';
+                    window.location.href = '/';
                 } else {
                     errorMsg.textContent = '❌ Неверный логин или пароль!';
                     errorMsg.style.display = 'block';

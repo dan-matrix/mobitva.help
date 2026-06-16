@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель - Mobitva(МоБитва)</title>
+    <link rel="icon" type="image/png" href="img/books.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+            /* -------------------- ОБЩИЕ СТИЛИ -------------------- */
+            *{box-sizing:border-box;}
+            body{background:#0d0a07;color:#e8dcc0;font-family:Tahoma;font-size:13px;padding:20px;}
+            .wrapper{max-width:1200px;margin:0 auto;background:#1a1612;border-radius:12px;border:1px solid #c7ba00;padding:20px;}
+
+            /* -------------------- ШАПКА -------------------- */
+            .header-wrapper{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;margin-bottom:30px;background:#2a2420;border-radius:12px;border:1px solid #c7ba00;}
+            .header-wrapper .site-title{font-size:28px;font-weight:bold;color:#d4b35a;text-align:center;flex:1;}
+            .header-wrapper a{background:#1a1612;color:#e8dcc0;text-decoration:none;padding:8px 14px;border-radius:8px;border:2px solid #c7ba00;}
+            .header-wrapper a:hover{background:#2a2420;border-color:#ff4444;color:#ff4444;}
+
+            /* -------------------- КНОПКИ -------------------- */
+            .categories{display:flex;gap:10px;margin-bottom:20px;justify-content:center;}
+            .cat-btn{padding:10px 16px;background:#2a2420;border:2px solid #c7ba00;border-radius:10px;color:#e8dcc0;cursor:pointer;}
+            .cat-btn:hover{background:#3a342a;border-color:#ff4444;color:#ff4444;}
+            .add-btn{background:#2a2420;border:1px solid #c7ba00;border-radius:8px;padding:8px 16px;color:#c7ba00;cursor:pointer;margin-bottom:15px;}
+            .add-btn:hover{background:#c7ba00;color:#0d0a07;}
+            .add-stat-btn{background:#2a2420;border:2px solid #c7ba00;border-radius:30px;padding:8px 16px;color:#c7ba00;cursor:pointer;margin-top:10px;width:100%;font-weight:bold;}
+            .add-stat-btn:hover{background:#c7ba00;color:#0d0a07;transform:scale(1.02);}
+
+            /* -------------------- АДМИН-ПАНЕЛЬ -------------------- */
+            .admin-tabs{display:flex;gap:10px;margin-bottom:25px;flex-wrap:wrap;border-bottom:1px solid #c7ba00;padding-bottom:10px;}
+            .admin-tab{background:#2a2420;border:1px solid #c7ba00;border-radius:10px;padding:10px 20px;cursor:pointer;}
+            .admin-tab:hover{background:#3a342a;border-color:#ff4444;}
+            .admin-tab.active{background:#c7ba00;color:#0d0a07;font-weight:bold;}
+            .admin-panel-content{display:none;}
+            .admin-panel-content.active{display:block;}
+            .admin-table{width:100%;border-collapse:collapse;}
+            .admin-table th,.admin-table td{padding:10px;border:1px solid #3a342a;text-align:left;}
+            .admin-table th{background:#2a2420;color:#d4b35a;}
+            .edit-btn{background:#c7ba00;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;margin-right:5px;}
+            .delete-btn{background:#ff4444;border:none;border-radius:4px;padding:4px 12px;color:white;cursor:pointer;}
+
+            /* -------------------- ПОИСК -------------------- */
+            .search-bar{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap;align-items:center;}
+            .search-bar input{background:#0d0a07;color:#e8dcc0;border:1px solid #c7ba00;border-radius:8px;padding:8px 12px;flex:1;min-width:200px;height:38px;}
+            .search-bar input:focus{outline:none;border-color:#ffaa44;}
+            .search-bar .add-btn{margin-bottom:0;height:38px;display:inline-flex;align-items:center;}
+            .search-bar .cat-btn{height:38px;padding:0 16px;display:inline-flex;align-items:center;}
+
+            /* -------------------- МОДАЛЬНЫЕ ОКНА -------------------- */
+            .modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;}
+            .modal-content{background:#1a1612;border:2px solid #c7ba00;border-radius:20px;padding:25px;width:800px;max-width:90%;max-height:85vh;overflow-y:auto;}
+            .modal-content h2{color:#d4b35a;margin-bottom:20px;text-align:center;font-size:22px;}
+            .modal-buttons{display:flex;gap:15px;justify-content:center;margin-top:20px;}
+            .modal-buttons button{min-width:120px;padding:10px 20px;}
+
+            /* -------------------- ФОРМЫ -------------------- */
+            .form-row{display:flex;gap:15px;margin-bottom:15px;}
+            .form-row .form-group{flex:1;}
+            .form-group{margin-bottom:15px;}
+            .form-group label{display:block;margin-bottom:6px;color:#c7ba00;font-weight:bold;font-size:12px;}
+            .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:#0d0a07;border:1px solid #c7ba00;border-radius:8px;color:#e8dcc0;font-size:13px;}
+            .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#ffaa44;}
+
+            /* -------------------- ХАРАКТЕРИСТИКИ -------------------- */
+            .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+            .stat-field{background:#0d0a07;border:1px solid #3a342a;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:12px;}
+            .stat-field label{display:flex;align-items:center;gap:6px;min-width:100px;margin:0;color:#d4b35a;font-weight:bold;}
+            .stat-field input{flex:1;background:transparent;border:none;padding:6px 0;color:#e8dcc0;}
+
+            /* -------------------- УНИКАЛЬНЫЕ ХАРАКТЕРИСТИКИ -------------------- */
+            .unique-container{margin-top:15px;margin-bottom:15px;}
+            .unique-row{display:flex;gap:10px;margin-bottom:10px;align-items:center;}
+            .unique-row input{flex:1;padding:8px;background:#0d0a07;border:1px solid #c7ba00;border-radius:6px;color:#e8dcc0;}
+            .unique-row button{background:#ff4444;border:none;border-radius:6px;padding:6px 12px;color:white;cursor:pointer;}
+
+            /* -------------------- ПИКЕР ИКОНОК -------------------- */
+            .icon-picker-container{position:fixed;z-index:10002;background:#1a1612;border:2px solid #c7ba00;border-radius:16px;padding:15px;box-shadow:0 0 30px rgba(0,0,0,0.5);}
+            .icon-picker-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:10px;border-bottom:1px solid #c7ba00;}
+            .icon-picker-header h3{color:#d4b35a;margin:0;font-size:16px;}
+            .close-icon-picker{background:#ff4444;border:none;border-radius:6px;padding:5px 15px;color:white;cursor:pointer;}
+            .icon-grid-inner{display:grid;grid-template-columns:repeat(9,80px);gap:8px;max-height:400px;overflow-y:auto;padding:5px;}
+            .icon-cell{width:80px;height:80px;background-image:url('img/shop.png');background-repeat:no-repeat;cursor:pointer;border:2px solid #5a4a38;border-radius:8px;}
+            .icon-cell:hover{border-color:#d4c9bc;transform:scale(1.02);}
+            .icon-preview{margin-top:8px;font-size:12px;color:#c7ba00;}
+
+            /* -------------------- ПОДСКАЗКИ И БЫСТРЫЕ КНОПКИ -------------------- */
+            .tooltip-icon{display:inline-block;width:18px;height:18px;background:#2a2420;border:1px solid #c7ba00;border-radius:50%;text-align:center;line-height:16px;font-size:12px;cursor:pointer;margin-left:8px;}
+            .tooltip-icon:hover{background:#c7ba00;color:#0d0a07;}
+            .quick-cooldown-buttons{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+            .quick-cooldown{background:#2a2420;border:1px solid #c7ba00;border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;transition:0.2s;}
+            .quick-cooldown:hover{background:#c7ba00;color:#0d0a07;}
+
+            /* -------------------- ТИПЫ КВЕСТОВ В АДМИНКЕ -------------------- */
+            .quest-types-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
+            .quest-type-tag{background:#2a2420;border:1px solid #c7ba00;border-radius:30px;padding:6px 16px;font-size:12px;cursor:pointer;transition:0.2s;color:#e8dcc0;}
+            .quest-type-tag.active{background:#c7ba00;color:#0d0a07;border-color:#ffaa44;}
+            .quest-type-tag:hover{background:#3a342a;border-color:#ffaa44;}
+            /* Этапы в админке */
+            .stage-item{background:#0d0a07;border:2px solid #c7ba00;border-radius:16px;padding:15px;margin-bottom:15px;position:relative;transition:0.2s;}
+            .stage-item:hover{background:#1a1612;border-color:#ffaa44;}
+            .stage-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #c7ba00;}
+            .stage-title{color:#ffdd88;font-weight:bold;font-size:14px;background:rgba(0,0,0,0.5);padding:4px 12px;border-radius:20px;}
+            .stage-remove{background:#ff4444;border:none;border-radius:8px;padding:4px 12px;color:white;cursor:pointer;font-size:11px;transition:0.2s;}
+            .stage-remove:hover{background:#ff6666;transform:scale(1.02);}
+            .stage-item .form-group{margin-bottom:12px;}
+            .stage-item .form-group:last-child{margin-bottom:0;}
+            .stage-item textarea{background:#0d0a07;border:1px solid #5a4a38;border-radius:10px;padding:8px;color:#e8dcc0;font-size:12px;}
+            .stage-item textarea:focus{border-color:#c7ba00;outline:none;}
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <div class="site-title">⚙️ АДМИН-ПАНЕЛЬ ⚙️</div>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='index.html'">🏠 Главная</button>
+            <button class="cat-btn" onclick="logout()">🚪 Выйти</button>
+            <button class="cat-btn" onclick="location.href='admin-map.html'">🗺️ Управление картой</button>
+        </div>
+
+        <div class="admin-tabs">
+            <div class="admin-tab active" data-tab="items">📦 Предметы</div>
+            <div class="admin-tab" data-tab="quests">📜 Квесты</div>
+            <div class="admin-tab" data-tab="demons">👹 Круги демона</div>
+            <div class="admin-tab" data-tab="totems">🧪 Тотемы</div>
+            <div class="admin-tab" data-tab="master">🏰 Мастер рун</div>
+            <div class="admin-tab" data-tab="druids">🌿 Холм Друидов</div>
+            <div class="admin-tab" data-tab="nakolki">🏚️ Квестовые руны</div>
+            <div class="admin-tab" data-tab="enhancements">✨ Усиления</div>
+            <div class="admin-tab" data-tab="news">📰 Новости</div>
+            <div class="admin-tab" data-tab="users">👥 Пользователи</div>
+            <div class="admin-tab" data-tab="secret_items">🔮 Секретные вещи</div>
+            <div class="admin-tab" data-tab="secret_sets">👘 Секретные сеты</div>
+            <div class="admin-tab" data-tab="secret_set_items">📦 Предметы сетов</div>
+        </div>
+        
+        <!-- Предметы -->
+        <div id="itemsPanel" class="admin-panel-content active">
+            <div class="search-bar">
+                <button class="add-btn" onclick="openModal('items')">➕ Добавить предмет</button>
+                <input type="text" id="searchItems" placeholder="🔍 Поиск по названию...">
+                <button class="cat-btn" onclick="clearSearch()">🔄 Сброс</button>
+            </div>
+            <table class="admin-table" id="itemsTable">
+                <thead>
+                    <tr><th>ID</th><th>Название</th><th>Тип</th><th>Уровень</th><th>Стиль</th><th>Действия</th></tr>
+                </thead>
+                <tbody id="itemsList"></tbody>
+            </table>
+        </div>
+        <!-- Квесты -->
+        <div id="questsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openQuestAdminModal()">➕ Добавить квест</button>
+            <div class="search-bar" style="margin-top:10px;">
+                <input type="text" id="searchQuestsAdmin" placeholder="🔍 Поиск по названию...">
+                <button class="cat-btn" onclick="clearQuestsSearch()">🔄 Сброс</button>
+            </div>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Локация</th>
+                        <th>Уровень</th>
+                        <th>Тип</th>
+                        <th>Повтор</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="questsList"></tbody>
+            </table>
+        </div>
+        <!-- Демоны -->
+        <div id="demonsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('demons')">➕ Добавить круг</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Уровень</th><th>Действия</th></tr></thead>
+                <tbody id="demonsList"></tbody>
+            </table>
+        </div>
+        <!-- Тотемы -->
+        <div id="totemsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('totems')">➕ Добавить тотем</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Уровень</th><th>Треб.ур.</th><th>Действия</th></tr></thead>
+                <tbody id="totemsList"></tbody>
+            </table>
+        </div>
+        <!-- Руны мастера -->
+        <div id="masterPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('master')">➕ Добавить руну</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Уровень</th><th>Действия</th></tr></thead>
+                <tbody id="masterList"></tbody>
+            </table>
+        </div>
+        <!-- Руны фиглей -->
+        <div id="druidsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('druids')">➕ Добавить руну</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Уровень</th><th>Действия</th></tr></thead>
+                <tbody id="druidsList"></tbody>
+            </table>
+        </div>
+        <!-- Руны квестов -->
+        <div id="nakolkiPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('nakolki')">➕ Добавить руну</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Уровень</th><th>Действия</th></tr></thead>
+                <tbody id="nakolkiList"></tbody>
+            </table>
+        </div>
+        <!-- Усиления -->
+        <div id="enhancementsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('enhancements')">➕ Добавить усиление</button>
+            <div class="search-bar" style="margin-top:10px;">
+                <input type="text" id="searchEnhancementsAdmin" placeholder="🔍 Поиск по названию...">
+                <button class="cat-btn" onclick="clearEnhancementsSearch()">🔄 Сброс</button>
+            </div>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Иконка</th><th>Название</th><th>Тип</th><th>Годность</th><th>Уровень</th><th>Способ получения</th><th>Действия</th></tr></thead>
+                <tbody id="enhancementsList"></tbody>
+            </table>
+        </div>
+        <!-- Новости -->
+        <div id="newsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openModal('news')">➕ Добавить новость</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Заголовок</th><th>Дата</th><th>Действия</th></tr></thead>
+                <tbody id="newsList"></tbody>
+            </table>
+        </div>
+        <!-- Пользователи -->
+        <div id="usersPanel" class="admin-panel-content">
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Логин</th><th>Email</th><th>Роль</th><th>Действия</th></tr></thead>
+                <tbody id="usersList"></tbody>
+            </table>
+        </div>
+        <!-- Сикрет items -->
+        <div id="secret_itemsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openSecretItemAdminModal()">➕ Добавить секретную вещь</button>
+            <div class="search-bar" style="margin-top:10px;">
+                <input type="text" id="searchSecretItemsAdmin" placeholder="🔍 Поиск по названию...">
+                <button class="cat-btn" onclick="clearSecretItemsSearch()">🔄 Сброс</button>
+            </div>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Иконка</th><th>Название</th><th>Тип</th><th>Годность</th><th>Уровень</th><th>Способ получения</th><th>Действия</th></tr></thead>
+                <tbody id="secretItemsList"></tbody>
+            </table>
+        </div>
+        <!-- Сикрет sets -->
+        <div id="secret_setsPanel" class="admin-panel-content">
+            <button class="add-btn" onclick="openSetAdminModal()">➕ Добавить сет</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Название</th><th>Стиль</th><th>Уровень</th><th>Действия</th></tr></thead>
+                <tbody id="secretSetsList"></tbody>
+            </table>
+        </div>
+        <div id="secret_set_itemsPanel" class="admin-panel-content">
+            <div class="form-group" style="margin-bottom:15px;">
+                <label>🎯 Выберите сет:</label>
+                <select id="setFilterSelect" style="width:100%; padding:10px; background:#0d0a07; border:1px solid #c7ba00; border-radius:8px; color:#e8dcc0;">
+                    <option value="">-- Выберите сет --</option>
+                </select>
+            </div>
+            <button class="add-btn" onclick="openSetItemAdminModal(null, document.getElementById('setFilterSelect').value)">➕ Добавить предмет в сет</button>
+            <table class="admin-table">
+                <thead><tr><th>ID</th><th>Иконка</th><th>Название</th><th>Уровень</th><th>Уникальные</th><th>Действия</th></tr></thead>
+                <tbody id="secretSetItemsList"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Добавить</h2>
+            <div id="modalFields"></div>
+            <div class="modal-buttons">
+                <button class="cat-btn" onclick="saveData()">💾 Сохранить</button>
+                <button class="cat-btn" onclick="closeModal()">❌ Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="iconPicker" class="icon-picker-container" style="display:none;">
+        <div class="icon-picker-header">
+            <h3>🎨 Выберите иконку</h3>
+            <button class="close-icon-picker" onclick="document.getElementById('iconPicker').style.display='none'">✕ Закрыть</button>
+        </div>
+        <div id="iconPickerGrid" class="icon-grid-inner"></div>
+    </div>
+
+    <!-- Модалка секретной вещи -->
+    <div id="secretItemAdminModal" class="modal">
+        <div class="modal-content">
+            <h2>🔮 Секретная вещь</h2>
+            <div class="form-group"><label>📝 Название</label><input type="text" id="secretItemName"></div>
+            <div class="form-row">
+                <div class="form-group"><label>📌 Тип</label>
+                    <select id="secretItemType">
+                        <option value="temporary">⏳ Временное</option>
+                        <option value="permanent">♾️ Постоянное</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>⭐ Уровень</label><input type="number" id="secretItemLevel" value="1"></div>
+            </div>
+            <div class="form-group"><label>📅 Годность (текст)</label><input type="text" id="secretItemExpiryText" placeholder="Например: 2 часа, 1 день, ∞"></div>
+            <div class="form-group">
+                <button type="button" class="cat-btn" onclick="showIconPicker((r,c)=>{document.getElementById('secretItemIconRow').value=r; document.getElementById('secretItemIconCol').value=c; document.getElementById('secretItemIconPreview').innerHTML='✅ Выбрано: ряд '+(r+1)+', колонка '+(c+1);}, this)">🎨 Выбрать иконку</button>
+                <div id="secretItemIconPreview" class="icon-preview">❌ Не выбрано</div>
+                <input type="hidden" id="secretItemIconRow" value="0"><input type="hidden" id="secretItemIconCol" value="0">
+            </div>
+            <div class="stats-grid" id="secretItemStatsGrid"></div>
+            <div class="form-group">
+                <label>✨ Уникальные характеристики</label>
+                <div id="secretUniqueContainer" class="unique-container"></div>
+                <button type="button" class="add-stat-btn" onclick="addSecretUniqueField()">➕ Добавить уникальную характеристику</button>
+            </div>
+            <div class="form-group"><label>📝 Описание</label><textarea id="secretItemDescription" rows="3"></textarea></div>
+            <div class="form-group"><label>🎯 Способ получения</label><textarea id="secretItemHowToGet" rows="2"></textarea></div>
+            <div class="modal-buttons"><button class="cat-btn" onclick="saveSecretItemAdmin()">💾 Сохранить</button><button class="cat-btn" onclick="closeSecretItemAdminModal()">❌ Отмена</button></div>
+        </div>
+    </div>
+
+    <!-- Модалка сета -->
+    <div id="setAdminModal" class="modal">
+        <div class="modal-content">
+            <h2>👘 Секретный сет</h2>
+            <div class="form-group"><label>📝 Название сета</label><input type="text" id="setNameAdmin"></div>
+            <div class="form-row">
+                <div class="form-group"><label>✨ Стиль</label>
+                    <select id="setStyleAdmin">
+                        <option value="">— Нет —</option>
+                        <option value="rare">Урон</option>
+                        <option value="uncommon">Уворот</option>
+                        <option value="armor">Броня</option>
+                        <option value="epic">Элита</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>⭐ Уровень</label><input type="number" id="setLevelAdmin" value="1"></div>
+            </div>
+            <div class="modal-buttons"><button class="cat-btn" onclick="saveSetAdmin()">💾 Сохранить</button><button class="cat-btn" onclick="closeSetAdminModal()">❌ Отмена</button></div>
+        </div>
+    </div>
+
+    <!-- Модалка предмета сета -->
+    <div id="setItemAdminModal" class="modal">
+        <div class="modal-content">
+            <h2>📦 Предмет сета</h2>
+            <div class="form-group"><label>📝 Название</label><input type="text" id="setItemName"></div>
+            <div class="form-row">
+                <div class="form-group"><label>✨ Стиль</label>
+                    <select id="setItemStyle">
+                        <option value="">— Нет —</option>
+                        <option value="rare">Урон</option>
+                        <option value="uncommon">Уворот</option>
+                        <option value="armor">Броня</option>
+                        <option value="epic">Элита</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>⭐ Уровень</label><input type="number" id="setItemLevel" value="1"></div>
+            </div>
+            <div class="form-group">
+                <button type="button" class="cat-btn" onclick="showIconPicker((r,c)=>{document.getElementById('setItemIconRow').value=r; document.getElementById('setItemIconCol').value=c; document.getElementById('setItemIconPreview').innerHTML='✅ Выбрано: ряд '+(r+1)+', колонка '+(c+1);}, this)">🎨 Выбрать иконку</button>
+                <div id="setItemIconPreview" class="icon-preview">❌ Не выбрано</div>
+                <input type="hidden" id="setItemIconRow" value="0"><input type="hidden" id="setItemIconCol" value="0">
+            </div>
+            <div class="stats-grid" id="setItemStatsGrid"></div>
+            <div class="form-group">
+                <label>✨ Уникальные характеристики</label>
+                <div id="setItemUniqueContainer" class="unique-container"></div>
+                <button type="button" class="add-stat-btn" onclick="addSetItemUniqueField()">➕ Добавить уникальную характеристику</button>
+            </div>
+            <div class="form-group"><label>📝 Описание</label><textarea id="setItemDescription" rows="3"></textarea></div>
+            <div class="form-group"><label>🎯 Способ получения</label><textarea id="setItemHowToGet" rows="2"></textarea></div>
+            <div class="modal-buttons"><button class="cat-btn" onclick="saveSetItemAdmin()">💾 Сохранить</button><button class="cat-btn" onclick="closeSetItemAdminModal()">❌ Отмена</button></div>
+        </div>
+    </div>
+    <!-- Модалка квеста (админка) -->
+    <div id="questAdminModal" class="modal">
+        <div class="modal-content">
+            <h2 id="questModalTitle">📜 Квест</h2>
+            <div class="form-group"><label>📝 Название</label><input type="text" id="questName"></div>
+            
+            <div class="form-row">
+                <div class="form-group"><label>📍 Локация</label><select id="questLocationId"></select></div>
+                <div class="form-group"><label>⭐ Уровень</label><input type="number" id="questLevel" value="1"></div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group" id="questTypesGroup">
+                    <label>🎯 Типы квеста (можно выбрать несколько)</label>
+                        <div class="quest-types-tags" id="questTypesTags">
+                        <button type="button" class="quest-type-tag" data-type="story">📖 Сюжетный</button>
+                        <button type="button" class="quest-type-tag" data-type="reward">💰 На плату</button>
+                        <button type="button" class="quest-type-tag" data-type="item">🎁 На предметы</button>
+                        <button type="button" class="quest-type-tag" data-type="daily">🌙 Ежедневный</button>
+                        <button type="button" class="quest-type-tag" data-type="blago">✨ Благо</button>
+                        <button type="button" class="quest-type-tag" data-type="glory">🏆 Слава</button>
+                        <button type="button" class="quest-type-tag" data-type="useless">💀 Бесполезный</button>
+                    </div>
+                </div>
+                <div class="form-group"><label>🔄 Повтор</label>
+                    <select id="questRepeatType">
+                        <option value="once">🔒 Одноразовый</option>
+                        <option value="daily">🌙 Ежедневный</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>⏱️ Текст отката <span class="tooltip-icon" onclick="showCooldownHelp()">❓</span></label>
+                    <input type="text" id="questCooldown" placeholder="2 часа, 24 часа, 7 дней">
+                </div>
+                <div class="form-group">
+                    <label>⏱️ Минуты отката</label>
+                    <input type="number" id="questCooldownMinutes" value="0">
+                    <div class="quick-cooldown-buttons">
+                        <button type="button" class="quick-cooldown" data-minutes="120">2ч</button>
+                        <button type="button" class="quick-cooldown" data-minutes="720">12ч</button>
+                        <button type="button" class="quick-cooldown" data-minutes="1440">1д</button>
+                        <button type="button" class="quick-cooldown" data-minutes="4320">3д</button>
+                        <button type="button" class="quick-cooldown" data-minutes="10080">7д</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group"><label>📖 Описание</label><textarea id="questDescription" rows="3"></textarea></div>
+            <div class="form-group">
+                <label>📋 ЭТАПЫ ЗАДАНИЯ</label>
+                <div id="questStagesContainer" class="stages-container"></div>
+                <button type="button" class="add-stat-btn" onclick="addQuestStage()" style="margin-top:5px;">➕ Добавить этап</button>
+            </div>
+            <div class="form-group"><label>📋 Требования</label><textarea id="questRequirements" rows="3"></textarea></div>
+            <div class="form-group">
+                <label>📝 Комментарий (доп. информация)</label>
+                <textarea id="questComment" rows="2" placeholder="Например: С мобов падает: Железная руда x5, Шкура x2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>НАГРАДЫ</label>
+                <div class="form-row">
+                    <div class="form-group"><label>Опыт</label><input type="number" id="questRewardExp" value="0"></div>
+                    <div class="form-group"><label>Слава</label><input type="number" id="questRewardGlory" value="0"></div>
+                    <div class="form-group"><label>Плата</label><input type="number" id="questRewardFee" value="0"></div>
+                    <div class="form-group"><label>Золото</label><input type="number" id="questRewardGold" value="0"></div>
+                </div>
+                <div id="extraRewardsContainer" style="display:none;">
+                    <div class="form-row">
+                        <div class="form-group"><label>Серебро</label><input type="number" id="questRewardSilver" value="0"></div>
+                        <div class="form-group"><label>Медяк</label><input type="number" id="questRewardCopper" value="0"></div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:5px;">
+                    <button type="button" class="cat-btn" id="showSilverCopperBtn" style="padding:4px 12px; font-size:11px;">➕ Серебро/Медяк</button>
+                    <button type="button" id="hideSilverCopperBtn" style="display:none; padding:4px 12px; font-size:11px; background:#2a2420; border:1px solid #c7ba00; border-radius:8px; color:#e8dcc0;">➖ Скрыть</button>
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                    <label>ПРЕДМЕТЫ В НАГРАДЕ</label>
+                    <div id="questRewardItemsContainer" class="unique-container"></div>
+                    <button type="button" class="add-stat-btn" onclick="addQuestRewardItemField()">Добавить предмет</button>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="cat-btn" onclick="saveQuestAdmin()">💾 Сохранить</button>
+                <button class="cat-btn" onclick="closeQuestAdminModal()">❌ Отмена</button>
+            </div>
+        </div>
+    </div>
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

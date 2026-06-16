@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление мобами - Админ-панель</title>
+    <link rel="icon" type="image/png" href="img/books.png">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .mobs-admin-container{max-width:1200px;margin:0 auto;}
+        .location-selector{margin-bottom:20px;padding:15px;background:#2a2420;border-radius:16px;}
+        .location-selector label{display:block;margin-bottom:8px;color:#c7ba00;}
+        .location-selector select{padding:10px;background:#0d0a07;border:1px solid #c7ba00;border-radius:8px;color:#e8dcc0;width:100%;max-width:300px;}
+        .mobs-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px;}
+        .add-mob-btn{background:#2a2420;border:1px solid #c7ba00;border-radius:8px;padding:8px 16px;color:#c7ba00;cursor:pointer;}
+        .add-mob-btn:hover{background:#c7ba00;color:#0d0a07;}
+        .no-mobs{text-align:center;padding:40px;color:#a0a0a0;}
+        .admin-table{width:100%;border-collapse:collapse;}
+        .admin-table th,.admin-table td{padding:10px;border:1px solid #3a342a;text-align:left;}
+        .admin-table th{background:#2a2420;color:#d4b35a;}
+        .edit-btn{background:#c7ba00;border:none;border-radius:4px;padding:4px 12px;cursor:pointer;margin-right:5px;}
+        .delete-btn{background:#ff4444;border:none;border-radius:4px;padding:4px 12px;color:white;cursor:pointer;}
+        
+        /* Модальное окно */
+        .modal{display:none;position:fixed;z-index:10000;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;}
+        .modal-content{background:#1a1612;border:2px solid #c7ba00;border-radius:20px;padding:25px;width:750px;max-width:90%;max-height:85vh;overflow-y:auto;position:relative;}
+        .modal-content h2{color:#d4b35a;margin-bottom:20px;text-align:center;font-size:22px;}
+        .form-row{display:flex;gap:15px;margin-bottom:15px;}
+        .form-row .form-group{flex:1;}
+        .form-group{margin-bottom:15px;}
+        .form-group label{display:block;margin-bottom:6px;color:#c7ba00;font-weight:bold;font-size:12px;}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;background:#0d0a07;border:1px solid #c7ba00;border-radius:8px;color:#e8dcc0;font-size:13px;}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+        .stat-field{background:#0d0a07;border:1px solid #3a342a;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:12px;}
+        .stat-field label{min-width:80px;color:#d4b35a;font-weight:bold;}
+        .stat-field input{flex:1;background:transparent;border:none;color:#e8dcc0;}
+        .icon-preview{margin-top:8px;font-size:12px;color:#c7ba00;}
+        .modal-buttons{display:flex;gap:15px;justify-content:center;margin-top:20px;}
+        .modal-buttons button{min-width:120px;padding:10px 20px;}
+        .cat-btn{padding:10px 16px;background:#2a2420;border:2px solid #c7ba00;border-radius:10px;color:#e8dcc0;cursor:pointer;}
+        .cat-btn:hover{background:#c7ba00;color:#0d0a07;}
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header-wrapper">
+        <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+        <div class="site-title">🗺️ УПРАВЛЕНИЕ МОБАМИ 🗺️</div>
+        <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+    </div>
+    <div class="categories">
+        <button class="cat-btn" onclick="location.href='admin.html'">⚙️ Админ-панель</button>
+        <button class="cat-btn" onclick="location.href='map.html'">🗺️ Карта</button>
+        <button class="cat-btn" onclick="location.href='index.html'">🏠 Главная</button>
+    </div>
+
+    <div class="mobs-admin-container">
+        <div class="location-selector">
+            <label>📍 Выберите локацию:</label>
+            <select id="locationSelect"></select>
+        </div>
+        
+        <div class="mobs-header">
+            <h3>🦇 Мобы в локации</h3>
+            <button class="add-mob-btn" id="addMobBtn">➕ Добавить моба</button>
+        </div>
+        <div id="mobsList" class="mobs-list"></div>
+    </div>
+</div>
+
+<!-- Модалка добавления/редактирования моба -->
+<div id="mobModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:400px;">
+        <h2 id="mobModalTitle">➕ Добавить моба</h2>
+        <div class="form-group">
+            <label>📝 Название моба</label>
+            <input type="text" id="mobName" placeholder="Название моба">
+        </div>
+        <div class="form-group">
+            <label>⭐ Уровень</label>
+            <input type="number" id="mobLevel" value="1">
+        </div>
+        <div class="form-group">
+            <button type="button" class="cat-btn" id="selectMobIconBtn">🎨 Выбрать иконку</button>
+            <div id="mobIconPreview" class="icon-preview">❌ Не выбрано</div>
+            <input type="hidden" id="mobIconRow" value="0">
+            <input type="hidden" id="mobIconCol" value="0">
+        </div>
+        <div class="form-group">
+            <label>📝 Описание</label>
+            <textarea id="mobDescription" rows="3" placeholder="Описание моба..."></textarea>
+        </div>
+        <div class="modal-buttons">
+            <button class="cat-btn" id="saveMobBtn">💾 Сохранить</button>
+            <button class="cat-btn" id="cancelMobBtn">❌ Отмена</button>
+        </div>
+    </div>
+</div>
+
+<script src="js/db.js"></script>
+<script src="js/common.js"></script>
+<script src="js/icon-picker.js"></script>
+<script src="js/admin-map.js"></script>
+</body>
+</html>

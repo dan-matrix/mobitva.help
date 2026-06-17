@@ -121,7 +121,6 @@ async function registerUser(login, password, email) {
     const passwordHash = await hashPassword(password);
     const { error } = await db.from('users').insert([{
         login,
-        password: '',
         password_hash: passwordHash,
         email,
         role: 'user',

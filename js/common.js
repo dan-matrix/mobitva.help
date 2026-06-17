@@ -134,7 +134,7 @@ function openAdminPanel() {
         alert('Доступ запрещён!');
         return;
     }
-    window.location.href = '/';
+    window.location.href = '/admin.html';
 }
 
 // ==================== МОДАЛЬНЫЕ ОКНА ====================

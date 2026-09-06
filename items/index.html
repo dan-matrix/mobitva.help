@@ -136,9 +136,8 @@
     <script src="/js/common.js"></script>
     <script src="/js/statico.js"></script>
     <script>
-        if (!checkAuth()) { window.location.href = '/auth'; }
 
-        // Обработка параметров URL для глобального поиска
+// Обработка параметров URL для глобального поиска
         const urlParams = new URLSearchParams(window.location.search);
         const itemId = urlParams.get('item');
         if (itemId) {

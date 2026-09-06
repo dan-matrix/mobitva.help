@@ -75,9 +75,8 @@
     <script src="/js/db.js"></script>
     <script src="/js/common.js"></script>
     <script>
-        if (!checkAuth()) { window.location.href = '/auth'; }
 
-        let currentNewsCategory = 'all';
+let currentNewsCategory = 'all';
         let allNews = [];
 
         async function renderNews() {

@@ -133,9 +133,8 @@
     <script src="/js/db.js"></script>
     <script src="/js/common.js"></script>
     <script>
-        if (!checkAuth()) { window.location.href = '/auth'; }
 
-        async function loadLatestNews() {
+async function loadLatestNews() {
             const news = await getNews();
             const latest = news.slice(0, 2);
             const c = document.getElementById('latestNewsContainer');

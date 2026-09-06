@@ -162,9 +162,8 @@
 <script src="/js/statico.js"></script>
 <script>
     const currentUser = checkAuth();
-    if (!currentUser) window.location.href = '/auth';
 
-    let secretSets = [];
+let secretSets = [];
     let secretSetsItems = {};
 
     async function loadSecretSets() {

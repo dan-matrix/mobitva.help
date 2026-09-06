@@ -108,11 +108,8 @@
     <script src="/js/db.js"></script>
     <script src="/js/common.js"></script>
     <script>
-        if (!checkAuth()) { 
-            window.location.href = '/auth';
-        } 
-        
-        document.addEventListener('DOMContentLoaded', function() {
+
+document.addEventListener('DOMContentLoaded', function() {
             displayAdminPanel();
             
             const copyBtn = document.getElementById('copyEmailBtn');

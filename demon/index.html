@@ -97,6 +97,7 @@
     <script src="/js/statico.js"></script>
     <script>
         const currentUser = checkAuth();
+        if (!currentUser) { window.location.href = '/auth'; }
 
 let demonCircles = {};
 

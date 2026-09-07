@@ -68,13 +68,17 @@ async function displayAdminPanel() {
     const ap = document.getElementById('adminPanel');
     const up = document.getElementById('userPanel');
     const ab = document.getElementById('addItemBtn');
+    const gp = document.getElementById('guestPanel');
 
     if (!user) {
         if (ap) ap.style.display = 'none';
         if (up) up.style.display = 'none';
         if (ab) ab.style.display = 'none';
+        if (gp) gp.style.display = 'block';
         return;
     }
+
+    if (gp) gp.style.display = 'none';
 
     if (user.role === 'admin') {
         if (ap) ap.style.display = 'block';

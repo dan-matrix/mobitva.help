@@ -181,6 +181,9 @@
 <script src="/js/db.js"></script>
 <script src="/js/common.js"></script>
 <script>
+    const currentUser = checkAuth();
+    if (!currentUser) { window.location.href = '/auth'; }
+
     const ENTITY_STATS = {
         rage: { точность: -5, урон: 5, блок: 3, уворот: -2, броня: 0, хп: 0 },
         rock: { точность: 2, урон: -4, блок: -1, уворот: -1, броня: 2, хп: 35 },

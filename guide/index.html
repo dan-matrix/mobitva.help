@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Путеводитель по сайту - Mobitva(МоБитва)</title>
+    <meta name="description" content="Путеводитель по Mobitva.help — полный гид по разделам сайта: база предметов, квесты, карта, руны, тотем клана, секретные вещи, калькулятор сущностей и другие справочники по игре МоБитва.">
+    <link rel="canonical" href="https://mobitva.help/guide/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Путеводитель по сайту - Mobitva(МоБитва)">
+    <meta property="og:description" content="Полный гид по разделам справочника Mobitva.help: что где искать и как этим пользоваться.">
+    <meta property="og:url" content="https://mobitva.help/guide/">
+    <meta property="og:image" content="https://mobitva.help/img/books.png">
+    <meta property="og:locale" content="ru_RU">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .guide-card{background:linear-gradient(145deg,#1a1612,#12100e);border:1px solid rgba(199,186,0,0.25);border-radius:20px;padding:22px 25px;margin-bottom:18px;}
+        .guide-card h2{color:#d4b35a;font-size:18px;margin:0 0 8px 0;display:flex;align-items:center;gap:10px;}
+        .guide-card p{color:#c0c0c0;line-height:1.6;font-size:14px;margin:0 0 10px 0;}
+        .guide-card .guide-link{display:inline-block;color:#c7ba00;font-weight:bold;text-decoration:none;font-size:13px;border:1px solid rgba(199,186,0,0.4);border-radius:20px;padding:6px 16px;transition:0.2s;}
+        .guide-card .guide-link:hover{background:rgba(199,186,0,0.15);}
+        .guide-badge{font-size:11px;font-weight:bold;padding:3px 10px;border-radius:20px;margin-left:auto;}
+        .guide-badge.open{background:rgba(80,200,120,0.15);color:#7be0a0;border:1px solid rgba(80,200,120,0.4);}
+        .guide-badge.closed{background:rgba(255,170,68,0.12);color:#ffaa44;border:1px solid rgba(255,170,68,0.4);}
+        .guide-intro{text-align:center;color:#c7ba00;max-width:750px;margin:0 auto 25px;line-height:1.6;}
+        .guide-section-title{color:#e8dcc0;font-size:16px;letter-spacing:1px;margin:30px 0 12px;text-transform:uppercase;opacity:0.8;}
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile/'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="guestPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👋</div>
+                    <div>
+                        <div class="admin-name">Вы не авторизованы</div>
+                        <div class="admin-role">Гость</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/auth/'">🔑 Войти</button>
+                    <button class="admin-btn" onclick="location.href='/register/'">📝 Регистрация</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <h1 class="site-title">📖 ПУТЕВОДИТЕЛЬ ПО САЙТУ 📖</h1>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+        <div class="categories">
+            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
+        </div>
+
+        <p class="guide-intro">
+            Mobitva.help — справочник и помощник по игре МоБитва. Ниже собраны все разделы сайта:
+            что в них находится, кому они доступны и как ими пользоваться. Часть разделов открыта
+            для всех гостей сайта, а часть доступна только после бесплатной регистрации.
+        </p>
+
+        <div class="guide-section-title">🌐 Открытые разделы — доступны без регистрации</div>
+
+        <div class="guide-card">
+            <h2>🏠 Главная <span class="guide-badge open">Открыто</span></h2>
+            <p>Стартовая страница сайта со ссылками на все остальные разделы и лентой последних новостей проекта. Отсюда удобнее всего начинать знакомство с сайтом.</p>
+            <a class="guide-link" href="/">Перейти на главную →</a>
+        </div>
+
+        <div class="guide-card">
+            <h2>📦 База предметов <span class="guide-badge open">Открыто</span></h2>
+            <p>Полный список экипировки, оружия и предметов игры МоБитва. Для каждого предмета показаны характеристики, требуемый уровень, уникальные свойства и описание. Есть поиск по названию, фильтры по типу и уровню, а также сравнение двух предметов между собой.</p>
+            <a class="guide-link" href="/items/">Открыть базу предметов →</a>
+        </div>
+
+        <div class="guide-card">
+            <h2>📰 Новости <span class="guide-badge open">Открыто</span></h2>
+            <p>Лента новостей и обновлений игры МоБитва — изменения баланса, новый контент, события сообщества и объявления администрации проекта.</p>
+            <a class="guide-link" href="/news/">Читать новости →</a>
+        </div>
+
+        <div class="guide-card">
+            <h2>🗺️ Карта <span class="guide-badge open">Открыто</span></h2>
+            <p>Интерактивная карта локаций МоБитвы: где искать мобов, какие ресурсы добываются в каждой зоне, связи между локациями. Полезна для планирования охоты и фарма.</p>
+            <a class="guide-link" href="/map/">Открыть карту →</a>
+        </div>
+
+        <div class="guide-card">
+            <h2>📬 Контакты <span class="guide-badge open">Открыто</span></h2>
+            <p>Способы связи с администрацией сайта: почта, Telegram-канал сообщества и ссылки на связанные проекты MMOBITVA.</p>
+            <a class="guide-link" href="/contacts/">Посмотреть контакты →</a>
+        </div>
+
+        <div class="guide-section-title">🔒 Разделы для зарегистрированных пользователей</div>
+
+        <div class="guide-card">
+            <h2>🗺️ Квесты <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Список игровых заданий с описанием сюжета, наградами, требуемым уровнем и локацией выполнения. Для зарегистрированных пользователей доступно добавление избранных квестов и таймеров напоминаний по ежедневным заданиям.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>🛡️ Круги демона <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Гайд по режиму «Круги демона» — описание механики, советы по прохождению и особенности каждого круга.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>🌿 Холм Фиглей (руны друидов) <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Описание рун друидов, их эффектов и рекомендации по выбору для разных билдов персонажа.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>✨ Мастер рун <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Обучение рунам мастера в игре МоБитва — какие руны существуют, как их получить и как они усиливают персонажа.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>🖋️ Квестовые руны (наколки) <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Список квестовых рун (наколок), способы их получения через выполнение заданий и описание бонусов.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>🧪 Тотем клана <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Улучшения и бонусы тотема клана — какие уровни доступны и какие преимущества даёт прокачка тотема всей команде.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>✨ Усиления <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Временные и постоянные усиления персонажа в игре — полный список эффектов и условия их получения.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>🔮 Секретные вещи <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Редкие и уникальные находки игры, которые не входят в стандартную базу предметов — секретные вещи со своими особыми свойствами.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>👘 Секретные сеты <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Коллекции редкой экипировки (сеты) и бонусы, которые они дают при полном сборе.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>🧮 Калькулятор сущностей <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>Инструмент для расчёта итоговых характеристик персонажа в зависимости от выбранных сущностей — помогает планировать билд заранее.</p>
+        </div>
+
+        <div class="guide-card">
+            <h2>👤 Личный кабинет <span class="guide-badge closed">Нужна регистрация</span></h2>
+            <p>После регистрации в личном кабинете доступны: сохранение избранных квестов, таймеры напоминаний, заметки и статистика персонажа.</p>
+        </div>
+
+        <div class="guide-section-title">🔑 Как получить доступ ко всем разделам</div>
+        <div class="guide-card">
+            <h2>Регистрация занимает меньше минуты</h2>
+            <p>Чтобы открыть квесты, руны, тотем клана, секретные вещи и остальные закрытые разделы, достаточно один раз зарегистрироваться на сайте. Кнопки входа и регистрации есть в шапке на главной странице и в разделе «Предметы».</p>
+            <a class="guide-link" href="/register/">Зарегистрироваться →</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            displayAdminPanel();
+        });
+    </script>
+</body>
+
+</html>

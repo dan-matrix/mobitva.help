@@ -3,8 +3,6 @@ Allow: /
 
 Disallow: /admin.html
 Disallow: /admin-map.html
-Disallow: /auth/
-Disallow: /register/
 Disallow: /profile/
 
 Sitemap: https://mobitva.help/sitemap.xml

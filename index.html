@@ -103,7 +103,7 @@
     
         <div class="site-footer">
             <div class="site-footer-info">
-                <div class="site-footer-icon">📖</div>
+                <span>📖</span>
                 <div class="site-footer-text">
                     <strong>Не знаете, с чего начать?</strong>
                     <span>Путеводитель объясняет, что находится в каждом разделе сайта.</span>
@@ -200,6 +200,21 @@ async function loadLatestNews() {
             displayAdminPanel();
         });
     </script>
+    <div id="authRequiredModal" class="rune-modal" style="display:none;">
+        <div class="rune-modal-content">
+            <div class="rune-modal-header">
+                <div class="rune-modal-close" onclick="closeAuthRequiredModal()">✕</div>
+                <div class="rune-modal-title">🔒 Нужна регистрация</div>
+            </div>
+            <div class="rune-modal-body">
+                <div class="rune-modal-description">Этот раздел доступен только зарегистрированным пользователям. Регистрация занимает меньше минуты.</div>
+            </div>
+            <div class="rune-modal-footer">
+                <button class="rune-modal-btn" onclick="closeAuthRequiredModal()">Отмена</button>
+                <button class="rune-modal-btn primary" onclick="goToRegisterFromModal()">Зарегистрироваться</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

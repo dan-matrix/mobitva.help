@@ -57,13 +57,30 @@
             <div class="site-title">🛡️ КРУГИ ДЕМОНА 🛡️</div>
             <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
         </div>
-
-        <div class="categories">
-            <button class="cat-btn" onclick="location.href='/'">🏠 Главная</button>
-            <button class="cat-btn" onclick="location.reload()">🔄 Обновить</button>
-        </div>
-
-        <div class="circles-grid" id="circles-container"></div>
+        <nav class="site-nav">
+            <a class="site-nav-link" href="/">🏠 Главная</a>
+            <a class="site-nav-link" href="/items/">📦 Предметы</a>
+            <a class="site-nav-link" href="/map/">🗺️ Карта</a>
+            <a class="site-nav-link" href="/news/">📰 Новости</a>
+            <a class="site-nav-link" href="/contacts/">📬 Контакты</a>
+            <a class="site-nav-link" href="/guide/">📖 Путеводитель</a>
+            <div class="site-nav-more">
+                <button class="site-nav-link site-nav-more-btn" onclick="toggleNavMore(event)">☰ Ещё разделы</button>
+                <div class="site-nav-dropdown" id="navMoreDropdown">
+                    <a class="site-nav-dropdown-item" href="/quests/" onclick="return handleLockedNav(event, '/quests/')">🗺️ Квесты <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/demon/" onclick="return handleLockedNav(event, '/demon/')">🛡️ Круги демона <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/druids/" onclick="return handleLockedNav(event, '/druids/')">🌿 Холм Фиглей <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/master/" onclick="return handleLockedNav(event, '/master/')">✨ Мастер рун <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/nakolki/" onclick="return handleLockedNav(event, '/nakolki/')">🖋️ Наколки <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/totem/" onclick="return handleLockedNav(event, '/totem/')">🧪 Тотем клана <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/enhancements/" onclick="return handleLockedNav(event, '/enhancements/')">✨ Усиления <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/secret_items/" onclick="return handleLockedNav(event, '/secret_items/')">🔮 Секретные вещи <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/secret_sets/" onclick="return handleLockedNav(event, '/secret_sets/')">👘 Секретные сеты <span class="lock">🔒</span></a>
+                    <a class="site-nav-dropdown-item" href="/calculator/" onclick="return handleLockedNav(event, '/calculator/')">🧮 Калькулятор <span class="lock">🔒</span></a>
+                </div>
+            </div>
+        </nav>
+        <div class="circles-grid" id="circles-container"><div class="loading-placeholder">Загрузка кругов демона...</div></div>
     </div>
 
     <div id="demonModal" class="demon-modal" style="display:none!important">
@@ -160,6 +177,21 @@ let demonCircles = {};
         renderCircles();
         document.addEventListener('DOMContentLoaded', displayAdminPanel);
     </script>
+    <div id="authRequiredModal" class="rune-modal" style="display:none;">
+        <div class="rune-modal-content">
+            <div class="rune-modal-header">
+                <div class="rune-modal-close" onclick="closeAuthRequiredModal()">✕</div>
+                <div class="rune-modal-title">🔒 Нужна регистрация</div>
+            </div>
+            <div class="rune-modal-body">
+                <div class="rune-modal-description">Этот раздел доступен только зарегистрированным пользователям. Регистрация занимает меньше минуты.</div>
+            </div>
+            <div class="rune-modal-footer">
+                <button class="rune-modal-btn" onclick="closeAuthRequiredModal()">Отмена</button>
+                <button class="rune-modal-btn primary" onclick="goToRegisterFromModal()">Зарегистрироваться</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

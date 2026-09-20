@@ -980,3 +980,29 @@ body{padding:10px;}
 .site-footer-text span{display:block;color:#8a8272;font-size:12px;line-height:1.4;}
 .site-footer .cat-btn{white-space:nowrap;flex-shrink:0;}
 @media (max-width:600px){.site-footer{flex-direction:column;text-align:center;padding-top:20px;}.site-footer-info{flex-direction:column;}}
+@media (max-width:600px){.site-footer{flex-direction:column;text-align:center;}.site-footer-info{flex-direction:column;}}
+
+
+/* ===== НАВИГАЦИЯ ПО РАЗДЕЛАМ ===== */
+.site-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:22px;}
+.site-nav-link{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(0,0,0,0.3);border:1px solid rgba(199,186,0,0.25);border-radius:30px;color:#b0a890;font-size:12px;font-weight:bold;text-decoration:none;white-space:nowrap;transition:0.2s;cursor:pointer;}
+.site-nav-link:hover{border-color:#c7ba00;color:#e8dcc0;background:rgba(199,186,0,0.1);}
+.site-nav-link.active{background:linear-gradient(145deg,#c7ba00,#d4b35a);color:#0d0a07;border-color:#ffaa44;}
+.site-nav-more{position:relative;}
+.site-nav-more-btn{background:rgba(0,0,0,0.3);}
+.site-nav-dropdown{display:none;position:absolute;top:calc(100% + 8px);left:0;min-width:230px;background:linear-gradient(145deg,#211d18,#161310);border:1px solid rgba(199,186,0,0.35);border-radius:16px;padding:8px;box-shadow:0 12px 30px rgba(0,0,0,0.5);z-index:80;}
+.site-nav-dropdown.open{display:block;}
+.site-nav-dropdown-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:10px;color:#d8d0c0;font-size:12.5px;text-decoration:none;transition:0.15s;cursor:pointer;}
+.site-nav-dropdown-item:hover{background:rgba(199,186,0,0.15);color:#ffdd88;}
+.site-nav-dropdown-item .lock{font-size:11px;opacity:0.6;}
+@media (max-width:600px){.site-nav-dropdown{left:50%;transform:translateX(-50%);}}
+
+/* ===== МОДАЛКА "НУЖНА РЕГИСТРАЦИЯ" ===== */
+#authRequiredModal .rune-modal-content{width:340px;}
+#authRequiredModal .rune-modal-footer{display:flex;gap:10px;justify-content:center;padding:15px 20px 20px;}
+#authRequiredModal .rune-modal-btn.primary{border-color:#c7ba00;background:linear-gradient(145deg,#c7ba00,#d4b35a);color:#0d0a07;}
+
+/* ===== ИНДИКАТОР ЗАГРУЗКИ ===== */
+.loading-placeholder{grid-column:1/-1;text-align:center;padding:50px 20px;color:#a0a0a0;font-size:14px;}
+.loading-placeholder::before{content:"⏳";display:block;font-size:28px;margin-bottom:10px;animation:loadingPulse 1.4s ease-in-out infinite;}
+@keyframes loadingPulse{0%,100%{opacity:0.4;}50%{opacity:1;}}

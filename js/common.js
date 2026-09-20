@@ -63,7 +63,58 @@ function isAdmin() {
 }
 
 // Отображение панели в зависимости от роли
+function highlightActiveNav() {
+    const path = location.pathname.replace(/\/index\.html$/, '/').replace(/\/$/, '') || '/';
+    document.querySelectorAll('.site-nav-link[href], .site-nav-dropdown-item[href]').forEach(a => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        const clean = href.replace(/\/$/, '') || '/';
+        if (clean === path) a.classList.add('active');
+    });
+}
+
+function toggleNavMore(event) {
+    event.stopPropagation();
+    const dd = document.getElementById('navMoreDropdown');
+    if (dd) dd.classList.toggle('open');
+}
+
+document.addEventListener('click', function (e) {
+    const dd = document.getElementById('navMoreDropdown');
+    if (dd && dd.classList.contains('open') && !e.target.closest('.site-nav-more')) {
+        dd.classList.remove('open');
+    }
+});
+
+function handleLockedNav(event, url) {
+    const user = checkAuth();
+    if (user) return true;
+    event.preventDefault();
+    const dd = document.getElementById('navMoreDropdown');
+    if (dd) dd.classList.remove('open');
+    const modal = document.getElementById('authRequiredModal');
+    if (modal) {
+        modal.dataset.targetUrl = url;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    return false;
+}
+
+function closeAuthRequiredModal() {
+    const modal = document.getElementById('authRequiredModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function goToRegisterFromModal() {
+    location.href = '/register/';
+}
+
 async function displayAdminPanel() {
+    highlightActiveNav();
     const user = checkAuth();
     const ap = document.getElementById('adminPanel');
     const up = document.getElementById('userPanel');

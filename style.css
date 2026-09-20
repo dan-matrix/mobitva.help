@@ -972,3 +972,9 @@ body{padding:10px;}
 ::-webkit-scrollbar-button{display:none;width:0;height:0;}
 ::-webkit-scrollbar-corner{background:transparent;}
 
+
+.site-guide-banner{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:linear-gradient(145deg,#1a1612,#12100e);border:1px solid rgba(199,186,0,0.3);border-radius:20px;padding:18px 25px;margin:25px 0 10px;}
+.site-guide-banner-text{color:#c0c0c0;font-size:14px;line-height:1.5;}
+.site-guide-banner-text strong{color:#d4b35a;display:block;font-size:15px;margin-bottom:3px;}
+.site-guide-banner .cat-btn{white-space:nowrap;}
+@media (max-width:600px){.site-guide-banner{flex-direction:column;text-align:center;}}

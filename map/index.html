@@ -207,7 +207,7 @@
 
         .map-icon-picker-preview{
             width:50px;height:50px;
-            background-image:url('img/iconmap.png');
+            background-image:url('/img/iconmap.png');
             background-repeat:no-repeat;
             background-position:calc(var(--mc,11) * -50px) calc(var(--mr,8) * -50px);
             background-size:600px 1200px;
@@ -298,6 +298,14 @@
             <span class="status-bar" id="statusMsg">⚡ Нажми на локацию для просмотра</span>
         </div>
     </div>
+
+        <div class="site-guide-banner">
+            <div class="site-guide-banner-text">
+                <strong>❓ Не разобрались, что где искать?</strong>
+                Путеводитель расскажет, что находится в каждом разделе сайта и как всё устроено.
+            </div>
+            <button class="cat-btn" onclick="location.href='/guide/'">📖 Открыть путеводитель</button>
+        </div>
 </div>
 
 <!-- Модалка локации (просмотр) -->

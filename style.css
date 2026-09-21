@@ -1,5 +1,6 @@
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:Tahoma,Arial;background:#0d0a07;color:#e8dcc0;font-size:13px;padding:20px 16px;}
+body{font-family:'Inter',Tahoma,Arial,sans-serif;background:#0d0a07;color:#e8dcc0;font-size:14.5px;line-height:1.55;padding:20px 16px;}
+h1,h2,h3,.site-title{font-family:'Cinzel',Georgia,serif;}
 .wrapper{max-width:1100px;margin:0 auto;padding:20px;background:linear-gradient(145deg,#1a1612,#12100e);border-radius:20px;border:1px solid rgba(199,186,0,0.3);box-shadow:0 0 30px rgba(199,186,0,0.1);}
 
 /* ===== ШАПКА ===== */

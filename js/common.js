@@ -1,5 +1,11 @@
 // ==================== УТИЛИТЫ ====================
 
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => { });
+    });
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -782,4 +788,40 @@ window.markNotificationRead = markNotificationRead;
 window.markAllNotificationsRead = markAllNotificationsRead;
 window.clearAllNotifications = clearAllNotifications;
 window.toggleSound = toggleSound;
+// ==================== ПОДЕЛИТЬСЯ ССЫЛКОЙ ====================
+
+function copyShareLink(section, id, btn) {
+    const url = `${location.origin}/${section}/?id=${id}&open=modal`;
+    const showCopied = () => {
+        if (!btn) return;
+        const original = btn.dataset.originalText || btn.innerHTML;
+        btn.dataset.originalText = original;
+        btn.innerHTML = '✅ Скопировано';
+        btn.classList.add('copied');
+        clearTimeout(btn._copyTimeout);
+        btn._copyTimeout = setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('copied');
+        }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showCopied).catch(() => fallbackCopy(url, showCopied));
+    } else {
+        fallbackCopy(url, showCopied);
+    }
+}
+
+function fallbackCopy(text, onDone) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { }
+    document.body.removeChild(ta);
+    if (onDone) onDone();
+}
+
+window.copyShareLink = copyShareLink;
 window.openModalFromUrl = openModalFromUrl;

@@ -111,7 +111,7 @@
                 </div>
                 <div class="rune-modal-description" id="modalDescription"></div>
             </div>
-            <div class="rune-modal-footer"><button class="rune-modal-btn" onclick="closeNakolkiModal()">Закрыть</button>
+            <div class="rune-modal-footer"><button class="share-link-btn" onclick="copyShareLink('nakolki', currentNakolkiModalId, this)">🔗 Поделиться</button><button class="rune-modal-btn" onclick="closeNakolkiModal()">Закрыть</button>
             </div>
         </div>
     </div>
@@ -125,6 +125,7 @@
         if (!currentUser) { window.location.href = '/auth'; }
 
 let nakolkiData = {};
+let currentNakolkiModalId = null;
 
         async function loadNakolki() {
             const data = await getNakolki();
@@ -184,6 +185,7 @@ let nakolkiData = {};
         function openNakolkiModal(id) {
             const r = nakolkiData[id];
             if (!r) return;
+            currentNakolkiModalId = id;
 
             const iconEl = document.getElementById('modalIcon');
             iconEl.style.backgroundPosition = `-${r.icon_col * 80}px -${r.icon_row * 80}px`;
@@ -206,6 +208,22 @@ let nakolkiData = {};
 
         renderNakolki();
         document.addEventListener('DOMContentLoaded', displayAdminPanel);
+
+        (function () {
+            const params = new URLSearchParams(location.search);
+            const id = params.get('id');
+            if (!(id && params.get('open') === 'modal')) return;
+            let attempts = 0;
+            const timer = setInterval(() => {
+                attempts++;
+                if (nakolkiData[id]) {
+                    clearInterval(timer);
+                    openNakolkiModal(id);
+                } else if (attempts > 20) {
+                    clearInterval(timer);
+                }
+            }, 200);
+        })();
     </script>
     <div id="authRequiredModal" class="rune-modal" style="display:none;">
         <div class="rune-modal-content">

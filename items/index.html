@@ -191,9 +191,19 @@
 
 // Обработка параметров URL для глобального поиска
         const urlParams = new URLSearchParams(window.location.search);
-        const itemId = urlParams.get('item');
-        if (itemId) {
-            setTimeout(() => openItemModal(parseInt(itemId)), 500);
+        const deepLinkId = urlParams.get('id');
+        if (deepLinkId && urlParams.get('open') === 'modal') {
+            const targetId = parseInt(deepLinkId);
+            let attempts = 0;
+            const deepLinkTimer = setInterval(() => {
+                attempts++;
+                if (typeof allItems !== 'undefined' && allItems.find(i => i.id === targetId)) {
+                    clearInterval(deepLinkTimer);
+                    openItemModal(targetId);
+                } else if (attempts > 20) {
+                    clearInterval(deepLinkTimer);
+                }
+            }, 200);
         }
 
         let allItems = [];
@@ -396,6 +406,7 @@
                         </div>
                     </div>
                     <div class="item-card-footer">
+                        <button class="share-link-btn" onclick="copyShareLink('items', ${item.id}, this)">🔗 Поделиться</button>
                         ${!isCompare ? `<button class="compare-btn" onclick="openSelectItemModal(${item.id})">➕ Сравнить</button>` : ''}
                         ${isCompare ? '' : '<button class="close-modal-btn" onclick="closeCompareModal()">Закрыть</button>'}
                     </div>

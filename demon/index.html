@@ -112,6 +112,7 @@
                 <div class="demon-modal-description" id="modalDescription"></div>
             </div>
             <div class="demon-modal-footer">
+                <button class="share-link-btn" onclick="copyShareLink('demon', currentDemonModalId, this)">🔗 Поделиться</button>
                 <button class="demon-modal-btn" onclick="closeDemonModal()">Закрыть</button>
             </div>
         </div>
@@ -126,6 +127,7 @@
         if (!currentUser) { window.location.href = '/auth'; }
 
 let demonCircles = {};
+let currentDemonModalId = null;
 
         async function loadCircles() {
             const data = await getDemons();
@@ -164,6 +166,7 @@ let demonCircles = {};
         function openDemonModal(id) {
             const circle = demonCircles[id];
             if (!circle) return;
+            currentDemonModalId = id;
 
             document.getElementById('modalIcon').style.backgroundPosition =
                 `-${circle.icon_col * 80}px -${circle.icon_row * 80}px`;
@@ -184,7 +187,23 @@ let demonCircles = {};
         }
 
         renderCircles();
-        document.addEventListener('DOMContentLoaded', displayAdminPanel);
+document.addEventListener('DOMContentLoaded', displayAdminPanel);
+
+(function () {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!(id && params.get('open') === 'modal')) return;
+    let attempts = 0;
+    const timer = setInterval(() => {
+        attempts++;
+        if (demonCircles[id]) {
+            clearInterval(timer);
+            openDemonModal(id);
+        } else if (attempts > 20) {
+            clearInterval(timer);
+        }
+    }, 200);
+})();
     </script>
     <div id="authRequiredModal" class="rune-modal" style="display:none;">
         <div class="rune-modal-content">

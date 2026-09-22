@@ -125,6 +125,7 @@
                 <div class="rune-modal-description" id="modalDescription"></div>
             </div>
             <div class="rune-modal-footer">
+                <button class="share-link-btn" onclick="copyShareLink('enhancements', currentEnhancementModalId, this)">🔗 Поделиться</button>
                 <button class="rune-modal-btn" onclick="closeEnhancementModal()">Закрыть</button>
             </div>
         </div>
@@ -139,6 +140,7 @@
         if (!currentUser) { window.location.href = '/auth'; }
 
 let allEnhancements = [];
+let currentEnhancementModalId = null;
         let currentTypeFilter = 'all';
         let currentSearch = '';
 
@@ -198,6 +200,7 @@ let allEnhancements = [];
         function openEnhancementModal(id) {
             const enh = allEnhancements.find(e => e.id === id);
             if (!enh) return;
+            currentEnhancementModalId = id;
 
             const iconEl = document.getElementById('modalIcon');
             iconEl.style.backgroundPosition = `-${enh.icon_col * 80}px -${enh.icon_row * 80}px`;
@@ -251,6 +254,23 @@ let allEnhancements = [];
 
         loadEnhancements();
         document.addEventListener('DOMContentLoaded', displayAdminPanel);
+
+        (function () {
+            const params = new URLSearchParams(location.search);
+            const idStr = params.get('id');
+            if (!(idStr && params.get('open') === 'modal')) return;
+            const id = parseInt(idStr);
+            let attempts = 0;
+            const timer = setInterval(() => {
+                attempts++;
+                if (allEnhancements.find(e => e.id === id)) {
+                    clearInterval(timer);
+                    openEnhancementModal(id);
+                } else if (attempts > 20) {
+                    clearInterval(timer);
+                }
+            }, 200);
+        })();
     </script>
     <div id="authRequiredModal" class="rune-modal" style="display:none;">
         <div class="rune-modal-content">

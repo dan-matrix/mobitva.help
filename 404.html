@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница не найдена - Mobitva(МоБитва)</title>
+    <meta name="robots" content="noindex, follow">
+    <meta name="description" content="Такой страницы не существует. Вернитесь на главную Mobitva.help или найдите нужный раздел через путеводитель.">
+    <link rel="icon" type="image/png" href="/img/books.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#c7ba00">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mobitva">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .error-404-block{text-align:center;padding:50px 20px 30px;}
+        .error-404-code{font-family:'Cinzel',Georgia,serif;font-size:72px;font-weight:700;background:linear-gradient(135deg,#d4b35a,#ffdd88);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1;margin-bottom:10px;}
+        .error-404-title{font-size:20px;color:#e8dcc0;font-weight:bold;margin-bottom:12px;}
+        .error-404-text{color:#a8a090;font-size:14px;max-width:420px;margin:0 auto 28px;line-height:1.6;}
+        .error-404-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="adminPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👑</div>
+                    <div>
+                        <div class="admin-name" id="adminName"></div>
+                        <div class="admin-role">Администратор</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/profile/'">👤 Профиль</button>
+                    <button class="admin-btn" onclick="openAdminPanel()">⚙️ Управление</button>
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="userPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👤</div>
+                    <div>
+                        <div class="admin-name" id="userName"></div>
+                        <div class="admin-role">Пользователь</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn logout-btn" onclick="logout()">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+        <div id="guestPanel" style="display:none;">
+            <div class="admin-panel">
+                <div class="admin-info">
+                    <div class="admin-avatar">👋</div>
+                    <div>
+                        <div class="admin-name">Вы не авторизованы</div>
+                        <div class="admin-role">Гость</div>
+                    </div>
+                </div>
+                <div class="admin-actions">
+                    <button class="admin-btn" onclick="location.href='/auth/'">🔑 Войти</button>
+                    <button class="admin-btn" onclick="location.href='/register/'">📝 Регистрация</button>
+                </div>
+            </div>
+        </div>
+        <div class="header-wrapper">
+            <a href="https://mobitva.net" target="_blank">mobitva.net</a>
+            <h1 class="site-title">⚔️ MOBITVA ⚔️</h1>
+            <a href="https://mmobitva.ru" target="_blank">mmobitva.ru</a>
+        </div>
+
+        <nav class="site-nav">
+            <a class="site-nav-link" href="/">🏠 Главная</a>
+            <a class="site-nav-link" href="/items/">📦 Предметы</a>
+            <a class="site-nav-link" href="/map/">🗺️ Карта</a>
+            <a class="site-nav-link" href="/news/">📰 Новости</a>
+            <a class="site-nav-link" href="/contacts/">📬 Контакты</a>
+            <a class="site-nav-link" href="/guide/">📖 Путеводитель</a>
+        </nav>
+
+        <div class="error-404-block">
+            <div class="error-404-code">404</div>
+            <div class="error-404-title">Такой страницы не существует</div>
+            <div class="error-404-text">
+                Возможно, адрес введён с опечаткой или страница была перемещена.
+                Вернитесь на главную или загляните в путеводитель — там собраны все разделы сайта.
+            </div>
+            <div class="error-404-actions">
+                <button class="cat-btn" onclick="location.href='/'">🏠 На главную</button>
+                <button class="cat-btn" onclick="location.href='/guide/'">📖 Путеводитель</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/db.js"></script>
+    <script src="/js/common.js"></script>
+</body>
+
+</html>

@@ -110,7 +110,7 @@
             </div>
             <div class="totem-modal-description" id="modalDescription"></div>
         </div>
-        <div class="totem-modal-footer"><button class="totem-modal-btn" onclick="closeTotemModal()">Закрыть</button></div>
+        <div class="totem-modal-footer"><button class="share-link-btn" onclick="copyShareLink('totem', currentTotemModalId, this)">🔗 Поделиться</button><button class="totem-modal-btn" onclick="closeTotemModal()">Закрыть</button></div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -122,6 +122,7 @@ const currentUser = checkAuth();
         if (!currentUser) { window.location.href = '/auth'; }
 
 let totems = {};
+let currentTotemModalId = null;
 
 async function loadTotems() {
     const data = await getTotems();
@@ -181,6 +182,7 @@ async function renderTotems() {
 function openTotemModal(id) {
     const t = totems[id];
     if(!t) return;
+    currentTotemModalId = id;
 
     const iconEl = document.getElementById('modalIcon');
     iconEl.style.backgroundPosition = `-${t.icon_col * 80}px -${t.icon_row * 80}px`;
@@ -203,6 +205,22 @@ function closeTotemModal() {
 
 renderTotems();
 document.addEventListener('DOMContentLoaded', displayAdminPanel);
+
+(function () {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (!(id && params.get('open') === 'modal')) return;
+    let attempts = 0;
+    const timer = setInterval(() => {
+        attempts++;
+        if (totems[id]) {
+            clearInterval(timer);
+            openTotemModal(id);
+        } else if (attempts > 20) {
+            clearInterval(timer);
+        }
+    }, 200);
+})();
 </script>
     <div id="authRequiredModal" class="rune-modal" style="display:none;">
         <div class="rune-modal-content">

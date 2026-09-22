@@ -135,6 +135,7 @@
                 <div class="rune-modal-description" id="modalDescription"></div>
             </div>
             <div class="rune-modal-footer">
+                <button class="share-link-btn" onclick="copyShareLink('secret_items', currentSecretItemModalId, this)">🔗 Поделиться</button>
                 <button class="rune-modal-btn" onclick="closeSecretItemModal()">Закрыть</button>
             </div>
         </div>
@@ -149,6 +150,7 @@
         if (!currentUser) { window.location.href = '/auth'; }
 
 let allSecretItems = [];
+let currentSecretItemModalId = null;
             let currentTypeFilter = 'all';
             let currentSearch = '';
 
@@ -209,6 +211,7 @@ let allSecretItems = [];
             function openSecretItemModal(id) {
                 const item = allSecretItems.find(e => e.id === id);
                 if (!item) return;
+                currentSecretItemModalId = id;
 
                 const iconEl = document.getElementById('modalIcon');
                 if (iconEl) iconEl.style.backgroundPosition = `-${item.icon_col * 80}px -${item.icon_row * 80}px`;
@@ -284,6 +287,23 @@ let allSecretItems = [];
 
             loadSecretItems();
             document.addEventListener('DOMContentLoaded', displayAdminPanel);
+
+            (function () {
+                const params = new URLSearchParams(location.search);
+                const idStr = params.get('id');
+                if (!(idStr && params.get('open') === 'modal')) return;
+                const id = parseInt(idStr);
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    attempts++;
+                    if (allSecretItems.find(e => e.id === id)) {
+                        clearInterval(timer);
+                        openSecretItemModal(id);
+                    } else if (attempts > 20) {
+                        clearInterval(timer);
+                    }
+                }, 200);
+            })();
     </script>
     <div id="authRequiredModal" class="rune-modal" style="display:none;">
         <div class="rune-modal-content">

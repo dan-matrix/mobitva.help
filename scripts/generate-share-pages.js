@@ -16,7 +16,14 @@
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-const sharp = require('sharp');
+const WebSocket = require('ws');
+
+let sharp = null;
+try {
+    sharp = require('sharp');
+} catch (e) {
+    console.warn('! Модуль "sharp" недоступен — иконки предметов вырезаться не будут, будет использован общий значок сайта.');
+}
 
 const SUPABASE_URL = 'https://gmcqxgxwtczjlwyifwew.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdtY3F4Z3h3dGN6amx3eWlmd2V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjIxMTAsImV4cCI6MjA5MDk5ODExMH0.cM6xm9qCRbl-c1h-pWOWKSeAozYUy7KpJjua79JgFuk';
@@ -25,7 +32,10 @@ const ROOT = path.join(__dirname, '..');
 const SHOP_SPRITE_PATH = path.join(ROOT, 'img', 'shop.png');
 const SPRITE_CELL = 80;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    realtime: { transport: WebSocket },
+    auth: { persistSession: false },
+});
 
 // Описание каждой категории: таблица в БД, папка на сайте, куда ведёт редирект,
 // параметр URL, которым запрос открывает нужную модалку на живой странице.
@@ -69,6 +79,7 @@ function buildDescription(row) {
 
 async function cropIcon(row, outFile) {
     try {
+        if (!sharp) return null;
         if (row.icon_row === undefined || row.icon_row === null || row.icon_col === undefined || row.icon_col === null) {
             return null;
         }

@@ -1,0 +1,13 @@
+{
+  "name": "mobitva-help-build",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Служебные скрипты сборки для mobitva.help (генерация превью-страниц для соцсетей)",
+  "scripts": {
+    "generate-share-pages": "node scripts/generate-share-pages.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "sharp": "^0.33.5"
+  }
+}

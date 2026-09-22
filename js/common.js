@@ -791,7 +791,7 @@ window.toggleSound = toggleSound;
 // ==================== ПОДЕЛИТЬСЯ ССЫЛКОЙ ====================
 
 function copyShareLink(section, id, btn) {
-    const url = `${location.origin}/${section}/?id=${id}&open=modal`;
+    const url = `${location.origin}/share/${section}/${id}/`;
     const showCopied = () => {
         if (!btn) return;
         const original = btn.dataset.originalText || btn.innerHTML;

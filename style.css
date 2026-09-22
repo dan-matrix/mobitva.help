@@ -1012,3 +1012,13 @@ body{padding:10px;}
 .share-link-btn{background:rgba(0,0,0,0.3);border:1px solid rgba(199,186,0,0.35);color:#d8d0c0;border-radius:20px;padding:9px 16px;font-size:12px;font-weight:bold;cursor:pointer;transition:0.2s;}
 .share-link-btn:hover{border-color:#c7ba00;background:rgba(199,186,0,0.12);color:#ffdd88;}
 .share-link-btn.copied{background:linear-gradient(145deg,#2f8f4f,#256e3d);border-color:#4caf6f;color:#e8fff0;}
+
+/* ===== МОБИЛЬНАЯ АДАПТАЦИЯ: УСИЛЕНИЯ / СЕКРЕТНЫЕ ВЕЩИ ===== */
+@media (max-width:480px){
+    .enhancement-card{padding:10px 12px;gap:10px;flex-wrap:wrap;}
+    .enhancement-info{min-width:0;flex:1 1 140px;}
+    .enhancement-name{font-size:14px;}
+    .enhancement-level{font-size:10px;}
+    .enhancement-expiry{font-size:9px;}
+    .enhancement-badge{font-size:10px;padding:3px 10px;}
+}

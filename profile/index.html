@@ -44,6 +44,12 @@
         </div>
     </div>
 
+    <!-- ==================== ПРИВЯЗКА TELEGRAM ==================== -->
+    <div class="stats-block" id="telegramLinkBlock">
+        <div class="stats-block-title">✈️ TELEGRAM-БОТ</div>
+        <div id="telegramLinkContent" style="text-align:center; padding:10px; color:#c0c0c0;">Загрузка...</div>
+    </div>
+
     <!-- ==================== СТАТИСТИКА ==================== -->
     <div class="stats-block">
         <div class="stats-block-title">📊 МОЯ СТАТИСТИКА</div>
@@ -351,11 +357,92 @@
         await Promise.all([
             loadStats(),
             loadNotes(),
-            loadLeaderboard()
+            loadLeaderboard(),
+            loadTelegramLinkStatus()
         ]);
         allQuests = await getQuests();
         await loadCharacters();
     }
+
+    // ==================== ПРИВЯЗКА TELEGRAM ====================
+    function generateLinkCode() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        return code;
+    }
+
+    async function loadTelegramLinkStatus() {
+        const container = document.getElementById('telegramLinkContent');
+        const user = currentUser;
+        if (!user) return;
+        await ensureDb();
+        const { data, error } = await db
+            .from('telegram_links')
+            .select('*')
+            .eq('login', user.login)
+            .eq('confirmed', true)
+            .maybeSingle();
+
+        if (error) {
+            container.innerHTML = 'Не удалось проверить статус привязки.';
+            return;
+        }
+
+        if (data) {
+            container.innerHTML = `
+                <div style="color:#7be0a0; font-weight:bold; margin-bottom:10px;">✅ Telegram привязан</div>
+                <button class="admin-btn" onclick="unlinkTelegram()">🔌 Отвязать</button>
+            `;
+        } else {
+            container.innerHTML = `
+                <div style="margin-bottom:10px;">Привяжите Telegram, чтобы управлять таймерами и получать уведомления в чате.</div>
+                <button class="admin-btn" onclick="startTelegramLink()">✈️ Привязать Telegram</button>
+                <div id="telegramLinkCodeBox" style="margin-top:14px;"></div>
+            `;
+        }
+    }
+
+    async function startTelegramLink() {
+        const user = currentUser;
+        if (!user) return;
+        await ensureDb();
+        const code = generateLinkCode();
+        const { error } = await db.from('telegram_links').insert([{
+            login: user.login,
+            link_code: code,
+            confirmed: false
+        }]);
+        if (error) {
+            alert('❌ Не удалось создать код привязки. Попробуйте ещё раз.');
+            return;
+        }
+        const box = document.getElementById('telegramLinkCodeBox');
+        if (box) {
+            box.innerHTML = `
+                <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(199,186,0,0.4); border-radius:14px; padding:16px;">
+                    <div style="font-size:13px; color:#a8a090; margin-bottom:8px;">
+                        Напишите нашему боту в Telegram команду:
+                    </div>
+                    <div style="font-size:20px; font-weight:bold; color:#ffdd88; letter-spacing:2px; margin-bottom:8px;">
+                        /link ${code}
+                    </div>
+                    <div style="font-size:12px; color:#8a8272;">Код действует несколько минут. После привязки обновите эту страницу.</div>
+                </div>
+            `;
+        }
+    }
+
+    async function unlinkTelegram() {
+        if (!confirm('Отвязать Telegram? Уведомления и управление таймерами через бота перестанут работать.')) return;
+        const user = currentUser;
+        await ensureDb();
+        const { error } = await db.from('telegram_links').delete().eq('login', user.login);
+        if (error) { alert('❌ Не удалось отвязать.'); return; }
+        await loadTelegramLinkStatus();
+    }
+    window.startTelegramLink = startTelegramLink;
+    window.unlinkTelegram = unlinkTelegram;
 
     // ==================== ИНФОРМАЦИЯ ПРОФИЛЯ ====================
     function loadProfileInfo() {

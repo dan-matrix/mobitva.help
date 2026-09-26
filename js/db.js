@@ -126,7 +126,7 @@ async function registerUser(login, password, email) {
         role: 'user',
         name: login
     }]);
-    if (error) { console.error('registerUser error:', error); return { success: false, message: '❌ Ошибка регистрации. Попробуйте позже.' }; }
+    if (error) { console.error('registerUser error:', error); return { success: false, message: `❌ Ошибка регистрации: ${error.message || error.code || 'неизвестная ошибка'}` }; }
     return { success: true, message: '✅ Регистрация успешна!' };
 }
 

@@ -95,7 +95,7 @@
             errorMsg.style.display = 'block';
             return;
         }
-        if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+        if (!/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
             errorMsg.textContent = '❌ Введите корректный email!';
             errorMsg.style.display = 'block';
             return;

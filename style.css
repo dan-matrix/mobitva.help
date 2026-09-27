@@ -134,7 +134,8 @@ h1,h2,h3,.site-title{font-family:'Cinzel',Georgia,serif;}
 .item-card-close{position:absolute;top:10px;right:15px;font-size:26px;cursor:pointer;color:#c7ba00;transition:0.2s;}
 .item-card-close:hover{color:#ff4444;transform:scale(1.1);}
 .item-card-icon{display:flex;justify-content:center;margin-bottom:10px;}
-.item-card-icon .shop-icon{width:80px;height:80px;border-radius:16px;background-color:#0d0a07;}
+/*.item-card-icon .shop-icon{width:80px;height:80px;border-radius:16px;background-color:#0d0a07;}*/
+.item-card-icon .shop-icon{width:160px;height:160px;background-size:1440px 6080px;background-position:calc(var(--col,0) * -160px) calc(var(--row,0) * -160px);border-radius:16px;background-color:#0d0a07;}
 .item-card-title{font-size:20px;font-weight:bold;color:#d4b35a;margin-bottom:5px;}
 .item-card-subtitle{font-size:12px;color:#c7ba00;margin-bottom:5px;}
 .item-card-level{font-size:11px;color:#ffaa44;}

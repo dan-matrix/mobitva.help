@@ -249,7 +249,7 @@ h1,h2,h3,.site-title{font-family:'Cinzel',Georgia,serif;}
 /* ===== ИКОНКИ ===== */
 .item-icon,.shop-icon,.stat-icon{background-repeat:no-repeat;display:inline-block;}
 .item-icon{width:28px;height:28px;background-image:url('img/icons.png');}
-.shop-icon{width:80px;height:80px;background-image:url('img/shopico.png');background-position:calc(var(--col,0) * -180px) calc(var(--row,0) * -180px);}
+.shop-icon{width:80px;height:80px;background-image:url('img/shopico.png');background-size:720px 3040px;background-position:calc(var(--col,0) * -80px) calc(var(--row,0) * -80px);}
 .stat-icon{width:28px;height:28px;background-image:url('img/icons.png');background-repeat:no-repeat;background-position:calc(var(--col,0) * -28px) calc(var(--row,0) * -28px);display:inline-block;vertical-align:middle;margin-right:6px;}
 .stat-icon-урон{--row:1;--col:4;}
 .stat-icon-точность{--row:1;--col:2;}
@@ -595,7 +595,7 @@ body{background:#0a0806;color:#e8dcc0;font-family:'Segoe UI',Tahoma,Geneva,Verda
         .enhancement-list{display:flex;flex-direction:column;gap:12px;}
         .enhancement-card{background:linear-gradient(145deg,#1e1a14,#14110d);border:1px solid rgba(199,186,0,0.25);border-radius:16px;padding:15px 20px;cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;gap:15px;}
         .enhancement-card:hover{transform:translateX(5px);border-color:#c7ba00;background:#2a2420;}
-        .enhancement-icon{width:80px;height:80px;background-image:url('img/shopico.png');background-repeat:no-repeat;background-position:calc(var(--col,0) * -180px) calc(var(--row,0) * -180px);flex-shrink:0;border-radius:8px;}        
+        .enhancement-icon{width:80px;height:80px;background-image:url('img/shopico.png');background-repeat:no-repeat;background-size:720px 3040px;background-position:calc(var(--col,0) * -80px) calc(var(--row,0) * -80px);flex-shrink:0;border-radius:8px;}        
         .enhancement-info{flex:1;}
         .enhancement-name{font-size:16px;font-weight:bold;color:#ffdd88;}
         .enhancement-level{font-size:11px;color:#c7ba00;margin-top:3px;}

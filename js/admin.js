@@ -295,7 +295,7 @@ async function checkDuplicateGeneric(itemName, currentId = null, getFunction) {
     return duplicate !== undefined;
 }
 
-// ==================== ПИКЕР ИКОНОК (shop.png) ====================
+// ==================== ПИКЕР ИКОНОК (shopico.png) ====================
 function showIconPicker(callback, buttonElement) {
     currentPickerCallback = callback;
     const grid = document.getElementById('iconPicker');

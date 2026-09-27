@@ -29,8 +29,8 @@ const SUPABASE_URL = 'https://gmcqxgxwtczjlwyifwew.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdtY3F4Z3h3dGN6amx3eWlmd2V3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MjIxMTAsImV4cCI6MjA5MDk5ODExMH0.cM6xm9qCRbl-c1h-pWOWKSeAozYUy7KpJjua79JgFuk';
 const SITE_URL = 'https://mobitva.help';
 const ROOT = path.join(__dirname, '..');
-const SHOP_SPRITE_PATH = path.join(ROOT, 'img', 'shop.png');
-const SPRITE_CELL = 80;
+const SHOP_SPRITE_PATH = path.join(ROOT, 'img', 'shopico.png');
+const SPRITE_CELL = 180;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     realtime: { transport: WebSocket },

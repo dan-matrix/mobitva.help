@@ -61,7 +61,7 @@
         .set-item-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(199,186,0,0.08),transparent);transition:0.4s;}
         .set-item-card:hover{background:#201c18;border-color:#c7ba00;transform:translateX(8px);}
         .set-item-card:hover::before{left:100%;}
-        .set-item-icon{width:180px;height:180px;border-radius:12px;background-color:#0a0806;border:1px solid #c7ba00;box-shadow:0 0 8px rgba(199,186,0,0.2);transition:0.2s;}
+        .set-item-icon{width:80px;height:80px;border-radius:12px;background-color:#0a0806;border:1px solid #c7ba00;box-shadow:0 0 8px rgba(199,186,0,0.2);transition:0.2s;}
         .set-item-card:hover .set-item-icon{box-shadow:0 0 12px rgba(199,186,0,0.5);}
         .set-item-info{flex:1;}
         .set-item-name{font-size:16px;font-weight:bold;color:#ffdd88;margin-bottom:4px;transition:0.2s;}
@@ -174,7 +174,7 @@
                 <div class="item-card-header">
                     <div class="item-card-close" onclick="closeItemModal()">✕</div>
                     <div class="item-card-icon">
-                        <div class="shop-icon" id="itemModalIcon" style="width:80px;height:80px;"></div>
+                        <div class="shop-icon" id="itemModalIcon" style="width:160px;height:160px;"></div>
                     </div>
                     <div class="item-card-title" id="itemModalName"></div>
                     <div class="item-card-subtitle" id="itemModalStyle"></div>
@@ -318,7 +318,7 @@ let secretSets = [];
         const item = await getSecretSetItemById(itemId);
         if (!item) return;
 
-        document.getElementById('itemModalIcon').style.backgroundPosition = `-${item.icon_col * 80}px -${item.icon_row * 80}px`;
+        document.getElementById('itemModalIcon').style.backgroundPosition = `-${item.icon_col * 160}px -${item.icon_row * 160}px`;
         document.getElementById('itemModalName').innerText = item.name;
         
         const styleText = getStyleTextForModal(item.style);

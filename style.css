@@ -249,7 +249,7 @@ h1,h2,h3,.site-title{font-family:'Cinzel',Georgia,serif;}
 /* ===== ИКОНКИ ===== */
 .item-icon,.shop-icon,.stat-icon{background-repeat:no-repeat;display:inline-block;}
 .item-icon{width:28px;height:28px;background-image:url('img/icons.png');}
-.shop-icon{width:80px;height:80px;background-image:url('img/shop.png');background-position:calc(var(--col,0) * -80px) calc(var(--row,0) * -80px);}
+.shop-icon{width:80px;height:80px;background-image:url('img/shopico.png');background-position:calc(var(--col,0) * -180px) calc(var(--row,0) * -180px);}
 .stat-icon{width:28px;height:28px;background-image:url('img/icons.png');background-repeat:no-repeat;background-position:calc(var(--col,0) * -28px) calc(var(--row,0) * -28px);display:inline-block;vertical-align:middle;margin-right:6px;}
 .stat-icon-урон{--row:1;--col:4;}
 .stat-icon-точность{--row:1;--col:2;}

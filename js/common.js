@@ -682,7 +682,7 @@ window.showItemModal = function (item, category) {
                 <div class="rune-modal-header">
                     <div class="rune-modal-close" onclick="window.closeUniversalItemModal()">✕</div>
                     <div class="rune-modal-icon">
-                        <div class="item-icon shop-icon" id="universalModalIcon" style="width:80px;height:80px;background-image:url('img/shop.png');background-repeat:no-repeat;"></div>
+                        <div class="item-icon shop-icon" id="universalModalIcon" style="width:80px;height:80px;background-image:url('img/shopico.png');background-repeat:no-repeat;"></div>
                     </div>
                     <div class="rune-modal-title" id="universalModalTitle"></div>
                     <div class="rune-modal-subtitle" id="universalModalSubtitle"></div>

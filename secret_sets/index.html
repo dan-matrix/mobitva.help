@@ -61,7 +61,7 @@
         .set-item-card::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(199,186,0,0.08),transparent);transition:0.4s;}
         .set-item-card:hover{background:#201c18;border-color:#c7ba00;transform:translateX(8px);}
         .set-item-card:hover::before{left:100%;}
-        .set-item-icon{width:80px;height:80px;border-radius:12px;background-color:#0a0806;border:1px solid #c7ba00;box-shadow:0 0 8px rgba(199,186,0,0.2);transition:0.2s;}
+        .set-item-icon{width:180px;height:180px;border-radius:12px;background-color:#0a0806;border:1px solid #c7ba00;box-shadow:0 0 8px rgba(199,186,0,0.2);transition:0.2s;}
         .set-item-card:hover .set-item-icon{box-shadow:0 0 12px rgba(199,186,0,0.5);}
         .set-item-info{flex:1;}
         .set-item-name{font-size:16px;font-weight:bold;color:#ffdd88;margin-bottom:4px;transition:0.2s;}
@@ -259,7 +259,7 @@ let secretSets = [];
                     const itemStyleText = getStyleText(item.style);
                     itemsHtml += `
                         <div class="set-item-card" onclick="event.stopPropagation(); openSetItemModal(${item.id})">
-                            <div class="set-item-icon shop-icon" style="--row:${item.icon_row}; --col:${item.icon_col}; width:180px; height:180px;"></div>
+                            <div class="set-item-icon shop-icon" style="--row:${item.icon_row}; --col:${item.icon_col}; width:80px; height:80px;"></div>
                             <div class="set-item-info">
                                 <div class="set-item-name">${escapeHtml(item.name)}</div>
                                 <div class="set-item-level">⭐ Уровень ${item.level}</div>

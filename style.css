@@ -270,7 +270,7 @@ h1,h2,h3,.site-title{font-family:'Cinzel',Georgia,serif;}
 .stat-editor-field label{font-size:11px;color:#c7ba00;display:block;margin-bottom:4px;}
 .stat-editor-field input{width:100%;background:#1a1612;border:1px solid #4a3f32;border-radius:6px;padding:6px;color:#e8dcc0;}
 .icon-grid-admin{display:grid;grid-template-columns:repeat(9,48px);gap:6px;max-height:240px;overflow-y:auto;padding:8px;background:#0d0a07;border-radius:8px;border:1px solid #c7ba00;}
-.icon-cell-admin{width:48px;height:48px;background-image:url('img/shop.png');background-repeat:no-repeat;background-size:auto 48px;cursor:pointer;border:1px solid #5a4a38;border-radius:6px;}
+.icon-cell-admin{width:48px;height:48px;background-image:url('img/shopico.png');background-repeat:no-repeat;background-size:auto 48px;cursor:pointer;border:1px solid #5a4a38;border-radius:6px;}
 .icon-cell-admin:hover{border-color:#ffaa44;transform:scale(1.02);}
 
 /* ==================== БАЗОВЫЕ СТИЛИ ==================== */
@@ -595,7 +595,7 @@ body{background:#0a0806;color:#e8dcc0;font-family:'Segoe UI',Tahoma,Geneva,Verda
         .enhancement-list{display:flex;flex-direction:column;gap:12px;}
         .enhancement-card{background:linear-gradient(145deg,#1e1a14,#14110d);border:1px solid rgba(199,186,0,0.25);border-radius:16px;padding:15px 20px;cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;gap:15px;}
         .enhancement-card:hover{transform:translateX(5px);border-color:#c7ba00;background:#2a2420;}
-        .enhancement-icon{width:80px;height:80px;background-image:url('img/shop.png');background-repeat:no-repeat;background-position:calc(var(--col,0) * -80px) calc(var(--row,0) * -80px);flex-shrink:0;border-radius:8px;}        
+        .enhancement-icon{width:80px;height:80px;background-image:url('img/shopico.png');background-repeat:no-repeat;background-position:calc(var(--col,0) * -180px) calc(var(--row,0) * -180px);flex-shrink:0;border-radius:8px;}        
         .enhancement-info{flex:1;}
         .enhancement-name{font-size:16px;font-weight:bold;color:#ffdd88;}
         .enhancement-level{font-size:11px;color:#c7ba00;margin-top:3px;}
